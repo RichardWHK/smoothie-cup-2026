@@ -823,46 +823,25 @@
 // ============================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbxmLHLQ8Y4avDInBWxVwJw8_6UStIirP-fAA3uiFqvPY2k8GUgef9TLg16kxIklyXySZQ/exec";
 
-// ── Phase definitions (mirrors your GSheet seed data) ───────
-const PHASES = [
-  {
-    id: 1, name: "Groups", title: "Group Stage Heavyweights",
-    matches: [
-      { teamA: "New Zealand", emojiA: "🇳🇿", teamB: "USA",     emojiB: "🇺🇸", label: "Opening Week Feature Match",   yum: "Frozen Strawberries",        yuck: "Teaspoon of Marmite"        },
-      { teamA: "Argentina",   emojiA: "🇦🇷", teamB: "France",  emojiB: "🇫🇷", label: "Group Stage Blockbuster",      yum: "Chocolate Milk",             yuck: "Raw Celery Stick"           },
-    ]
-  },
-  {
-    id: 2, name: "Rd of 32", title: "Knockout Round Begins",
-    matches: [
-      { teamA: "England", emojiA: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", teamB: "Brazil",   emojiB: "🇧🇷", label: "Round of 32 Arena",             yum: "Scoop of Vanilla Ice Cream", yuck: "Splash of Pickle Juice"     },
-    ]
-  },
-  {
-    id: 3, name: "Rd of 16", title: "The Super Sixteen",
-    matches: [
-      { teamA: "Spain",   emojiA: "🇪🇸", teamB: "Italy",     emojiB: "🇮🇹", label: "Classic European Rivalry",      yum: "Honey Drizzle",              yuck: "Handful of Raw Spinach"     },
-    ]
-  },
-  {
-    id: 4, name: "Quarters", title: "Quarter-Final Masterclass",
-    matches: [
-      { teamA: "Germany", emojiA: "🇩🇪", teamB: "Portugal",  emojiB: "🇵🇹", label: "The Final Eight Duel",           yum: "Sliced Banana",              yuck: "Dash of Chili Flakes"       },
-    ]
-  },
-  {
-    id: 5, name: "Semis", title: "The Final Four",
-    matches: [
-      { teamA: "Netherlands", emojiA: "🇳🇱", teamB: "Belgium", emojiB: "🇧🇪", label: "Semi-Final Showdown",           yum: "Milo Powder",                yuck: "Crushed Garlic Clove"       },
-    ]
-  },
-  {
-    id: 6, name: "FINAL", title: "World Champion Crown Match",
-    matches: [
-      { teamA: "Winner Semi 1", emojiA: "🏆", teamB: "Winner Semi 2", emojiB: "⚽", label: "The Grand Final",         yum: "Whipped Cream & Sprinkles",  yuck: "Shot of Apple Cider Vinegar"},
-    ]
-  },
-];
+// ── Phase data — loaded dynamically from Google Sheet on login ─
+let PHASES = [];
+
+// Flag emoji map — add more teams here as needed
+const FLAG_MAP = {
+  "New Zealand":"🇳🇿","USA":"🇺🇸","Argentina":"🇦🇷","France":"🇫🇷",
+  "Iran":"🇮🇷","Germany":"🇩🇪","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Brazil":"🇧🇷",
+  "Spain":"🇪🇸","Italy":"🇮🇹","Portugal":"🇵🇹","Netherlands":"🇳🇱",
+  "Belgium":"🇧🇪","Morocco":"🇲🇦","Japan":"🇯🇵","Australia":"🇦🇺",
+  "Mexico":"🇲🇽","Colombia":"🇨🇴","Croatia":"🇭🇷","Senegal":"🇸🇳",
+  "Uruguay":"🇺🇾","Ecuador":"🇪🇨","Canada":"🇨🇦","South Korea":"🇰🇷",
+  "Switzerland":"🇨🇭","Denmark":"🇩🇰","Poland":"🇵🇱","Serbia":"🇷🇸",
+  "Ghana":"🇬🇭","Tunisia":"🇹🇳","Cameroon":"🇨🇲","Saudi Arabia":"🇸🇦",
+  "Winner Semi 1":"🏆","Winner Semi 2":"⚽",
+};
+
+// Phase display names — keyed by phase number
+const PHASE_NAMES  = { 1:"Groups", 2:"Rd of 32", 3:"Rd of 16", 4:"Quarters", 5:"Semis", 6:"FINAL" };
+const PHASE_TITLES = { 1:"Group Stage", 2:"Knockout Round", 3:"The Super Sixteen", 4:"Quarter-Finals", 5:"The Final Four", 6:"World Champion Final" };
 
 // ── App State ────────────────────────────────────────────────
 let state = {
@@ -985,11 +964,46 @@ async function doLogin() {
 }
 
 async function bootApp() {
-  // Fetch global phase status
+  // Show a loading state on the match area while we fetch
+  document.getElementById("match-cards").innerHTML =
+    `<div class="empty-state"><div class="spinner"></div><div style="margin-top:12px">Loading matches…</div></div>`;
+
   try {
-    const ps = await apiGet({ action: "getPhaseStatus" });
+    // Fetch phase status + live match list from the Sheet in parallel
+    const [ps, ms] = await Promise.all([
+      apiGet({ action: "getPhaseStatus" }),
+      apiGet({ action: "getMatches" }),
+    ]);
+
     if (ps.success) state.phaseGlobalStatus = ps.phases || {};
-  } catch(e) {}
+
+    if (ms.success && ms.phases) {
+      PHASES = Object.keys(ms.phases)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map(pid => ({
+          id:    pid,
+          name:  PHASE_NAMES[pid]  || `Phase ${pid}`,
+          title: PHASE_TITLES[pid] || `Phase ${pid}`,
+          matches: (ms.phases[pid] || [])
+            .sort((a, b) => a.matchIndex - b.matchIndex)
+            .map(m => ({
+              teamA:  m.teamA,  emojiA: FLAG_MAP[m.teamA]  || "\u26bd",
+              teamB:  m.teamB,  emojiB: FLAG_MAP[m.teamB]  || "\u26bd",
+              label:  m.label,
+              yum:    m.yum,
+              yuck:   m.yuck,
+            })),
+        }));
+
+      // Default to first phase
+      if (PHASES.length > 0) state.currentPhase = PHASES[0].id;
+    } else {
+      toast("Could not load matches from Sheet — check your Apps Script deployment.", "error");
+    }
+  } catch(e) {
+    toast("Network error loading matches. Try refreshing.", "error");
+  }
 
   // Set player display
   document.getElementById("player-name").textContent   = state.displayName;

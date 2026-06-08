@@ -518,6 +518,11 @@
     }
     .layer-yum  { background: linear-gradient(90deg, rgba(34,197,94,.5), rgba(16,185,129,.4)); color: #fff; }
     .layer-yuck { background: linear-gradient(90deg, rgba(239,68,68,.5), rgba(220,38,38,.4));  color: #fff; }
+    .layer-pending {
+      background: repeating-linear-gradient(45deg, rgba(122,127,154,.25), rgba(122,127,154,.25) 6px, rgba(122,127,154,.15) 6px, rgba(122,127,154,.15) 12px);
+      color: var(--muted);
+      font-style: italic;
+    }
 
     /* Glass rim + straw */
     .glass-rim {
@@ -770,12 +775,12 @@
       <div class="blender-col">
         <div class="blender-card">
           <div class="blender-title">Your Glass 🥤</div>
-          <div class="blender-sub">What you're drinking</div>
+          <div class="blender-sub">Fills in as results come in</div>
 
           <div class="glass-wrap">
             <div class="glass-rim"></div>
             <div class="glass" id="glass">
-              <div class="glass-empty" id="glass-empty">Make a pick to start brewing!</div>
+              <div class="glass-empty" id="glass-empty">Lock in picks — ingredients drop in once results are official!</div>
               <div class="glass-layers" id="glass-layers"></div>
             </div>
           </div>
@@ -866,6 +871,7 @@ let state = {
   phaseLocks: {},          // { 1: true/false, ... }
   phaseGlobalStatus: {},   // from server: { 1: { open, hasResults }, ... }
   predictions: {},         // { "phase-matchIdx": "Team Name" }
+  smoothie: null,          // cached getSmoothie response (real results)
   currentPhase: 1,
   loading: false,
 };
@@ -985,12 +991,14 @@ async function bootApp() {
 
   try {
     // Fetch phase status + live match list from the Sheet in parallel
-    const [ps, ms] = await Promise.all([
+    const [ps, ms, sm] = await Promise.all([
       apiGet({ action: "getPhaseStatus" }),
       apiGet({ action: "getMatches" }),
+      apiGet({ action: "getSmoothie", username: state.username, pin: state.pin }),
     ]);
 
     if (ps.success) state.phaseGlobalStatus = ps.phases || {};
+    if (sm.success) state.smoothie = sm;
 
     if (ms.success && ms.phases) {
       PHASES = Object.keys(ms.phases)
@@ -1220,6 +1228,7 @@ async function savePredictions() {
       toast(data.message || "Locked in! 🔒", "success");
       renderPhaseTabs();
       renderPhaseContent();
+      updateBlender();
     } else {
       toast(data.error || "Could not save.", "error");
     }
@@ -1231,42 +1240,68 @@ async function savePredictions() {
 
 // ============================================================
 //  BLENDER / GLASS UPDATE
+//  Driven by REAL results (state.smoothie.breakdown), not picks.
+//   - picked + result in  → green/red real ingredient
+//   - picked + no result  → neutral grey "pending" layer
+//   - not picked          → nothing
 // ============================================================
 function updateBlender() {
   const layers = [];
-  let yumCount = 0, yuckCount = 0;
+  let yumCount = 0, yuckCount = 0, pendingCount = 0;
+
+  const breakdown = (state.smoothie && state.smoothie.breakdown) || [];
 
   PHASES.forEach(phase => {
     phase.matches.forEach((match, idx) => {
       const key  = `${phase.id}-${idx}`;
       const pick = state.predictions[key];
-      if (!pick) return;
-      // In prediction mode: teamA = optimistic (yum preview), teamB = pessimistic
-      if (pick === match.teamA) {
-        layers.push({ type: "yum",  name: match.yum,  emoji: "🍓" });
-        yumCount++;
+      if (!pick) return; // no pick → no layer
+
+      // Has the real result come in for this exact pick?
+      const resolved = breakdown.find(b =>
+        Number(b.phase) === phase.id && b.predicted === pick
+      );
+
+      if (resolved) {
+        layers.push({ kind: "resolved", type: resolved.type, name: resolved.name });
+        if (resolved.type === "yum") yumCount++; else yuckCount++;
       } else {
-        layers.push({ type: "yuck", name: match.yuck, emoji: "🤢" });
-        yuckCount++;
+        // Locked/selected but result not determined yet
+        layers.push({ kind: "pending", name: match.label });
+        pendingCount++;
       }
     });
   });
 
   const glassLayers = document.getElementById("glass-layers");
   const glassEmpty  = document.getElementById("glass-empty");
-  glassEmpty.style.display  = layers.length === 0 ? "flex" : "none";
+  glassEmpty.style.display = layers.length === 0 ? "flex" : "none";
   glassLayers.innerHTML = "";
 
   layers.forEach(layer => {
     const el = document.createElement("div");
-    el.className = `glass-layer layer-${layer.type}`;
-    el.textContent = `${layer.emoji} ${layer.name}`;
+    if (layer.kind === "pending") {
+      el.className = "glass-layer layer-pending";
+      el.textContent = `⏳ Awaiting result`;
+    } else {
+      el.className = `glass-layer layer-${layer.type}`;
+      el.textContent = `${layer.type === "yum" ? "🍓" : "🤢"} ${layer.name}`;
+    }
     glassLayers.appendChild(el);
   });
 
   document.getElementById("count-yum").textContent  = `🍓 ${yumCount} Yum`;
   document.getElementById("count-yuck").textContent = `🤢 ${yuckCount} Yuck`;
-  document.getElementById("rating-value").textContent = getSmoothieRating(yumCount, yuckCount, layers.length);
+
+  // Rating reflects only DECIDED results
+  const decided = yumCount + yuckCount;
+  let rating;
+  if (decided === 0 && pendingCount > 0) {
+    rating = `⏳ ${pendingCount} pick${pendingCount > 1 ? "s" : ""} awaiting results`;
+  } else {
+    rating = getSmoothieRating(yumCount, yuckCount, decided);
+  }
+  document.getElementById("rating-value").textContent = rating;
 }
 
 function getSmoothieRating(yum, yuck, total) {
@@ -1318,6 +1353,10 @@ async function loadSmoothie() {
   try {
     const data = await apiGet({ action: "getSmoothie", username: state.username, pin: state.pin });
     if (!data.success) { content.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div>${esc(data.error)}</div>`; return; }
+
+    // Cache fresh results and refresh the glass on the predict screen
+    state.smoothie = data;
+    updateBlender();
 
     const { yumIngredients, yuckIngredients, totalYum, totalYuck, rating, breakdown } = data;
 

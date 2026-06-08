@@ -412,7 +412,7 @@
       border-color: rgba(239,68,68,.3);
       opacity: .7;
     }
-    .team-flag { font-size: 32px; line-height: 1; }
+    .team-flag { display:flex; align-items:center; justify-content:center; height:36px; }
     .vs-divider {
       font-family: var(--font-head);
       font-size: 16px;
@@ -826,18 +826,33 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxmLHLQ8Y4avDInBWxVwJw8
 // ── Phase data — loaded dynamically from Google Sheet on login ─
 let PHASES = [];
 
-// Flag emoji map — add more teams here as needed
-const FLAG_MAP = {
-  "New Zealand":"🇳🇿","USA":"🇺🇸","Argentina":"🇦🇷","France":"🇫🇷",
-  "Iran":"🇮🇷","Germany":"🇩🇪","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Brazil":"🇧🇷",
-  "Spain":"🇪🇸","Italy":"🇮🇹","Portugal":"🇵🇹","Netherlands":"🇳🇱",
-  "Belgium":"🇧🇪","Morocco":"🇲🇦","Japan":"🇯🇵","Australia":"🇦🇺",
-  "Mexico":"🇲🇽","Colombia":"🇨🇴","Croatia":"🇭🇷","Senegal":"🇸🇳",
-  "Uruguay":"🇺🇾","Ecuador":"🇪🇨","Canada":"🇨🇦","South Korea":"🇰🇷",
-  "Switzerland":"🇨🇭","Denmark":"🇩🇰","Poland":"🇵🇱","Serbia":"🇷🇸",
-  "Ghana":"🇬🇭","Tunisia":"🇹🇳","Cameroon":"🇨🇲","Saudi Arabia":"🇸🇦",
-  "Winner Semi 1":"🏆","Winner Semi 2":"⚽",
+// ISO country codes for flagcdn.com — works on Windows too!
+// For special entries (trophies etc) we fall back to an emoji span.
+const FLAG_ISO = {
+  "New Zealand":"nz","USA":"us","Argentina":"ar","France":"fr",
+  "Iran":"ir","Germany":"de","England":"gb-eng","Brazil":"br",
+  "Spain":"es","Italy":"it","Portugal":"pt","Netherlands":"nl",
+  "Belgium":"be","Morocco":"ma","Japan":"jp","Australia":"au",
+  "Mexico":"mx","Colombia":"co","Croatia":"hr","Senegal":"sn",
+  "Uruguay":"uy","Ecuador":"ec","Canada":"ca","South Korea":"kr",
+  "Switzerland":"ch","Denmark":"dk","Poland":"pl","Serbia":"rs",
+  "Ghana":"gh","Tunisia":"tn","Cameroon":"cm","Saudi Arabia":"sa",
 };
+
+// Returns an <img> tag for real countries, or a fallback emoji span
+function flagHTML(teamName) {
+  const iso = FLAG_ISO[teamName];
+  if (iso) {
+    return `<img src="https://flagcdn.com/w80/${iso}.png"
+                 alt="${teamName}"
+                 width="48"
+                 style="height:32px;width:auto;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.3);object-fit:cover;">`;
+  }
+  // Fallback for "Winner Semi 1", "Winner Semi 2", unknowns
+  const fallbacks = { "Winner Semi 1":"🏆", "Winner Semi 2":"⚽" };
+  const fb = fallbacks[teamName] || "⚽";
+  return `<span style="font-size:28px;line-height:1">${fb}</span>`;
+}
 
 // Phase display names — keyed by phase number
 const PHASE_NAMES  = { 1:"Groups", 2:"Rd of 32", 3:"Rd of 16", 4:"Quarters", 5:"Semis", 6:"FINAL" };
@@ -988,8 +1003,8 @@ async function bootApp() {
           matches: (ms.phases[pid] || [])
             .sort((a, b) => a.matchIndex - b.matchIndex)
             .map(m => ({
-              teamA:  m.teamA,  emojiA: FLAG_MAP[m.teamA]  || "\u26bd",
-              teamB:  m.teamB,  emojiB: FLAG_MAP[m.teamB]  || "\u26bd",
+              teamA:  m.teamA,
+              teamB:  m.teamB,
               label:  m.label,
               yum:    m.yum,
               yuck:   m.yuck,
@@ -1135,7 +1150,7 @@ function buildMatchCard(match, idx, picked, disabled, result) {
   const btnA = document.createElement("button");
   btnA.className = "team-btn" + (picked === match.teamA ? " selected" : "");
   btnA.disabled  = disabled;
-  btnA.innerHTML = `<span class="team-flag">${match.emojiA}</span><span>${match.teamA}</span>`;
+  btnA.innerHTML = `<div class="team-flag">${flagHTML(match.teamA)}</div><span>${match.teamA}</span>`;
   btnA.onclick   = () => pickTeam(state.currentPhase, idx, match.teamA);
 
   const vs = document.createElement("div");
@@ -1146,7 +1161,7 @@ function buildMatchCard(match, idx, picked, disabled, result) {
   const btnB = document.createElement("button");
   btnB.className = "team-btn" + (picked === match.teamB ? " selected" : "");
   btnB.disabled  = disabled;
-  btnB.innerHTML = `<span class="team-flag">${match.emojiB}</span><span>${match.teamB}</span>`;
+  btnB.innerHTML = `<div class="team-flag">${flagHTML(match.teamB)}</div><span>${match.teamB}</span>`;
   btnB.onclick   = () => pickTeam(state.currentPhase, idx, match.teamB);
 
   row.append(btnA, vs, btnB);

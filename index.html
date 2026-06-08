@@ -413,6 +413,19 @@
       opacity: .7;
     }
     .team-flag { display:flex; align-items:center; justify-content:center; height:36px; }
+    .flag-placeholder {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 44px; height: 30px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 3px;
+      color: var(--muted);
+      font-family: var(--font-head);
+      font-size: 18px;
+    }
+    .team-btn.placeholder { opacity: .55; }
+    .team-btn.placeholder span:last-child { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .match-card.awaiting { border-style: dashed; opacity: .8; }
     .vs-divider {
       font-family: var(--font-head);
       font-size: 16px;
@@ -448,6 +461,78 @@
 
     /* ── SAVE BUTTON ─────────────────────────────────────── */
     .save-btn-wrap { margin-top: 20px; }
+
+    /* ── GROUP PICKER (Phase 1) ──────────────────────────── */
+    .group-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .group-banner-rule { display: flex; gap: 18px; flex-wrap: wrap; }
+    .group-progress { font-size: 13px; color: var(--muted); font-weight: 700; }
+    .group-progress strong { color: var(--text); font-family: var(--font-head); font-size: 17px; }
+
+    .group-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .group-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      transition: border-color .2s;
+    }
+    .group-card.has-pick { border-color: rgba(34,197,94,.35); }
+    .group-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-head);
+      font-size: 17px;
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+    .group-tick { color: var(--green); font-size: 14px; }
+    .group-team {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: left;
+    }
+    .group-team:last-child { margin-bottom: 0; }
+    .group-team:hover:not(:disabled) {
+      background: rgba(249,115,22,.1);
+      border-color: rgba(249,115,22,.4);
+    }
+    .group-team.selected {
+      background: linear-gradient(135deg, rgba(34,197,94,.22), rgba(16,185,129,.12));
+      border-color: var(--green);
+      color: #fff;
+    }
+    .group-team:disabled { opacity: .55; cursor: not-allowed; }
+    .group-flag { display: flex; align-items: center; flex-shrink: 0; }
+    .group-team-name { flex: 1; line-height: 1.2; }
 
     /* ── BLENDER COLUMN ──────────────────────────────────── */
     .blender-col {
@@ -611,6 +696,54 @@
     }
     .ingredient-chip.yum  { background: rgba(34,197,94,.12);  border: 1px solid rgba(34,197,94,.25); color: var(--green); }
     .ingredient-chip.yuck { background: rgba(239,68,68,.1);   border: 1px solid rgba(239,68,68,.25); color: var(--red); }
+
+    /* ── PHASE PROGRESS CARDS ────────────────────────────── */
+    .prog-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+    .prog-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .prog-title { font-family: var(--font-head); font-size: 18px; }
+    .prog-count { font-size: 12px; font-weight: 800; color: var(--muted); }
+    .prog-bar {
+      height: 8px; border-radius: 100px;
+      background: var(--surface2);
+      overflow: hidden; margin-bottom: 10px;
+    }
+    .prog-fill {
+      height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--orange), var(--pink));
+      transition: width .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    .prog-stats { display: flex; gap: 16px; margin-bottom: 8px; }
+    .prog-status {
+      font-size: 12px; font-weight: 800; padding: 7px 12px;
+      border-radius: var(--radius-sm); margin-bottom: 12px;
+    }
+    .prog-status-win     { background: rgba(34,197,94,.12); color: var(--green); }
+    .prog-status-loss    { background: rgba(239,68,68,.1);  color: var(--red); }
+    .prog-status-neutral { background: var(--surface2);     color: var(--muted); }
+    .prog-matches { display: flex; flex-direction: column; gap: 4px; }
+    .prog-match {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; padding: 5px 0;
+      border-top: 1px solid var(--border);
+    }
+    .prog-mark {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #fff;
+    }
+    .prog-mark.ok { background: var(--green); }
+    .prog-mark.no { background: var(--red); }
+    .prog-match-label  { flex: 1; font-weight: 700; }
+    .prog-match-detail { color: var(--muted); font-size: 11px; white-space: nowrap; }
 
     /* ── LOADING SPINNER ─────────────────────────────────── */
     .spinner {
@@ -844,9 +977,13 @@ const FLAG_ISO = {
   "Ghana":"gh","Tunisia":"tn","Cameroon":"cm","Saudi Arabia":"sa",
 };
 
-// Returns an <img> tag for real countries, or a fallback emoji span
-function flagHTML(teamName) {
-  const iso = FLAG_ISO[teamName];
+// Returns an <img> tag for real countries, a gray ? for unknown
+// (placeholder) teams, or a fallback emoji span.
+function flagHTML(teamName, iso) {
+  if (isPlaceholder(teamName)) {
+    return `<span class="flag-placeholder">?</span>`;
+  }
+  iso = iso || FLAG_ISO[teamName];
   if (iso) {
     return `<img src="https://flagcdn.com/w80/${iso}.png"
                  alt="${teamName}"
@@ -857,6 +994,37 @@ function flagHTML(teamName) {
   const fallbacks = { "Winner Semi 1":"🏆", "Winner Semi 2":"⚽" };
   const fb = fallbacks[teamName] || "⚽";
   return `<span style="font-size:28px;line-height:1">${fb}</span>`;
+}
+
+// ── PHASE 1 GROUP STAGE DATA — 12 groups, 4 teams each ─────────
+// Pick 1 team per group to advance. 8+ of 12 correct = YUM, else YUCK.
+const GROUP_STAGE_DATA = [
+  { id: "A", teams: [ {name:"Mexico",iso:"mx"}, {name:"South Africa",iso:"za"}, {name:"South Korea",iso:"kr"}, {name:"Czechia",iso:"cz"} ] },
+  { id: "B", teams: [ {name:"Canada",iso:"ca"}, {name:"Bosnia & Herzegovina",iso:"ba"}, {name:"Qatar",iso:"qa"}, {name:"Switzerland",iso:"ch"} ] },
+  { id: "C", teams: [ {name:"Brazil",iso:"br"}, {name:"Morocco",iso:"ma"}, {name:"Haiti",iso:"ht"}, {name:"Scotland",iso:"gb-sct"} ] },
+  { id: "D", teams: [ {name:"United States",iso:"us"}, {name:"Paraguay",iso:"py"}, {name:"Australia",iso:"au"}, {name:"Türkiye",iso:"tr"} ] },
+  { id: "E", teams: [ {name:"Germany",iso:"de"}, {name:"Côte d'Ivoire",iso:"ci"}, {name:"Ecuador",iso:"ec"}, {name:"Curaçao",iso:"cw"} ] },
+  { id: "F", teams: [ {name:"Netherlands",iso:"nl"}, {name:"Japan",iso:"jp"}, {name:"Tunisia",iso:"tn"}, {name:"Sweden",iso:"se"} ] },
+  { id: "G", teams: [ {name:"Belgium",iso:"be"}, {name:"Egypt",iso:"eg"}, {name:"Iran",iso:"ir"}, {name:"New Zealand",iso:"nz"} ] },
+  { id: "H", teams: [ {name:"Spain",iso:"es"}, {name:"Cabo Verde",iso:"cv"}, {name:"Saudi Arabia",iso:"sa"}, {name:"Uruguay",iso:"uy"} ] },
+  { id: "I", teams: [ {name:"France",iso:"fr"}, {name:"Senegal",iso:"sn"}, {name:"Norway",iso:"no"}, {name:"Iraq",iso:"iq"} ] },
+  { id: "J", teams: [ {name:"Argentina",iso:"ar"}, {name:"Algeria",iso:"dz"}, {name:"Austria",iso:"at"}, {name:"Jordan",iso:"jo"} ] },
+  { id: "K", teams: [ {name:"Portugal",iso:"pt"}, {name:"Colombia",iso:"co"}, {name:"Uzbekistan",iso:"uz"}, {name:"Congo DR",iso:"cd"} ] },
+  { id: "L", teams: [ {name:"England",iso:"gb-eng"}, {name:"Croatia",iso:"hr"}, {name:"Ghana",iso:"gh"}, {name:"Panama",iso:"pa"} ] },
+];
+
+// ── THRESHOLD PHASES ───────────────────────────────────────
+// Phases scored as ONE phase-wide ingredient based on a % correct.
+//   Phase 1 (12 groups): 60%  → 8+ correct
+//   Phase 2 (16 matches): 50% → 8+ correct
+//   Phase 3 (8 matches):  60% → 5+ correct
+// Phases NOT listed here (4,5,6) use per-match scoring.
+const PHASE_THRESHOLDS = { 1: 0.60, 2: 0.50, 3: 0.60 };
+
+// A team name is a placeholder when its real identity isn't known yet
+// (e.g. "Awaiting results from phase 1"). Such matches can't be picked.
+function isPlaceholder(name) {
+  return !name || /^awaiting/i.test(String(name).trim());
 }
 
 // Phase display names — keyed by phase number
@@ -873,8 +1041,68 @@ let state = {
   predictions: {},         // { "phase-matchIdx": "Team Name" }
   smoothie: null,          // cached getSmoothie response (real results)
   currentPhase: 1,
+  currentView: "predict",  // predict | smoothie | leaderboard
   loading: false,
 };
+
+// ── SESSION PERSISTENCE ──────────────────────────────────────
+// Keeps players logged in across page refreshes. Wrapped in try/catch
+// so it degrades gracefully if storage is unavailable.
+const SESSION_KEY = "smoothieCup2026:session";
+function saveSession(username, pin) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ username, pin })); } catch(e) {}
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch(e) { return null; }
+}
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+// ── LIVE AUTO-REFRESH (results night) ────────────────────────
+let pollTimer = null;
+const POLL_INTERVAL_MS = 60000; // 60s
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(refreshLiveData, POLL_INTERVAL_MS);
+}
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// Quietly re-fetch results + phase status and refresh whatever's on screen.
+async function refreshLiveData() {
+  if (!state.username) return;
+  try {
+    const [ps, sm] = await Promise.all([
+      apiGet({ action: "getPhaseStatus" }),
+      apiGet({ action: "getSmoothie", username: state.username, pin: state.pin }),
+    ]);
+    if (ps.success) state.phaseGlobalStatus = ps.phases || {};
+    if (sm.success) state.smoothie = sm;
+
+    updateBlender();
+    if (state.currentView === "predict") {
+      renderPhaseTabs(); // refresh lock/result dots without disrupting active picking
+    } else if (state.currentView === "smoothie") {
+      renderSmoothie(state.smoothie);
+    } else if (state.currentView === "leaderboard") {
+      loadLeaderboard();
+    }
+  } catch(e) { /* silent — just try again next tick */ }
+}
+
+// Pause polling when the tab is hidden; resume (and refresh once) when visible.
+document.addEventListener("visibilitychange", () => {
+  if (!state.username) return;
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    refreshLiveData();
+    startPolling();
+  }
+});
 
 // ============================================================
 //  API HELPERS
@@ -953,6 +1181,27 @@ async function doRegister() {
 // ============================================================
 //  LOGIN
 // ============================================================
+// Core login used by both the form and auto-login on refresh.
+async function loginWithCredentials(username, pin) {
+  const data = await apiGet({ action: "getPlayer", username, pin });
+  if (!data.success) return { success: false, error: data.error };
+
+  state.username    = username;
+  state.pin         = pin;
+  state.displayName = data.displayName;
+  state.phaseLocks  = data.phaseLocks || {};
+
+  // Restore saved predictions
+  state.predictions = {};
+  (data.predictions || []).forEach(p => {
+    state.predictions[`${p.phase}-${p.matchIndex}`] = p.prediction;
+  });
+
+  saveSession(username, pin);
+  await bootApp();
+  return { success: true };
+}
+
 async function doLogin() {
   const username = document.getElementById("login-username").value.trim();
   const pin      = document.getElementById("login-pin").value.trim();
@@ -961,27 +1210,22 @@ async function doLogin() {
 
   setLoading("login-btn", true);
   try {
-    const data = await apiGet({ action: "getPlayer", username, pin });
-    if (data.success) {
-      state.username    = username;
-      state.pin         = pin;
-      state.displayName = data.displayName;
-      state.phaseLocks  = data.phaseLocks || {};
-
-      // Restore saved predictions
-      state.predictions = {};
-      (data.predictions || []).forEach(p => {
-        state.predictions[`${p.phase}-${p.matchIndex}`] = p.prediction;
-      });
-
-      await bootApp();
-    } else {
-      toast(data.error || "Login failed.", "error");
-    }
+    const r = await loginWithCredentials(username, pin);
+    if (!r.success) toast(r.error || "Login failed.", "error");
   } catch(e) {
     toast("Network error. Try again.", "error");
   }
   setLoading("login-btn", false, "🚀 Let's Go!");
+}
+
+// Silent re-login from a saved session when the page reloads.
+async function autoLogin(username, pin) {
+  try {
+    const r = await loginWithCredentials(username, pin);
+    if (!r.success) clearSession(); // stale/invalid creds → back to login
+  } catch(e) {
+    // Offline: keep the session and leave them on the login screen
+  }
 }
 
 async function bootApp() {
@@ -1024,6 +1268,36 @@ async function bootApp() {
     } else {
       toast("Could not load matches from Sheet — check your Apps Script deployment.", "error");
     }
+
+    // ── PHASE 1 → GROUP-STAGE DASHBOARD ──────────────────────
+    // Convert phase 1 into the 12-group picker. Pull its phase-wide
+    // yum/yuck from any phase-1 row in the Sheet (admin sets it there).
+    const p1Sheet = (ms.phases && ms.phases[1]) || [];
+    const p1Yum   = p1Sheet[0] ? p1Sheet[0].yum  : "the Group Stage Yum";
+    const p1Yuck  = p1Sheet[0] ? p1Sheet[0].yuck : "the Group Stage Yuck";
+
+    let p1 = PHASES.find(p => p.id === 1);
+    if (!p1) {
+      p1 = { id: 1, name: PHASE_NAMES[1], title: PHASE_TITLES[1], matches: [] };
+      PHASES.unshift(p1);
+      PHASES.sort((a, b) => a.id - b.id);
+    }
+    p1.isGroupStage = true;
+    p1.groups = GROUP_STAGE_DATA;
+    p1.title  = "Group Stage — Who Advances?";
+    p1.yum    = p1Yum;
+    p1.yuck   = p1Yuck;
+
+    // ── THRESHOLD MATCH PHASES (2 & 3) ───────────────────────
+    // Match cards, but scored as one phase-wide ingredient on a % threshold.
+    PHASES.forEach(p => {
+      if (p.id !== 1 && PHASE_THRESHOLDS[p.id] !== undefined) {
+        p.isThreshold = true;
+        p.passRatio   = PHASE_THRESHOLDS[p.id];
+        // Phase-wide yum/yuck = whatever's on the phase's rows in the Sheet
+        if (p.matches[0]) { p.yum = p.matches[0].yum; p.yuck = p.matches[0].yuck; }
+      }
+    });
   } catch(e) {
     toast("Network error loading matches. Try refreshing.", "error");
   }
@@ -1035,14 +1309,18 @@ async function bootApp() {
   renderPhaseTabs();
   renderPhaseContent();
   updateBlender();
+  state.currentView = "predict";
   showScreen("screen-app");
+  startPolling(); // live updates on results night
 }
 
 // ============================================================
 //  LOGOUT
 // ============================================================
 function doLogout() {
-  state = { username:null,pin:null,displayName:null,phaseLocks:{},phaseGlobalStatus:{},predictions:{},currentPhase:1,loading:false };
+  stopPolling();
+  clearSession();
+  state = { username:null,pin:null,displayName:null,phaseLocks:{},phaseGlobalStatus:{},predictions:{},smoothie:null,currentPhase:1,currentView:"predict",loading:false };
   switchMainView("predict");
   showScreen("screen-auth");
   toast("Logged out. See you next round! 👋", "info");
@@ -1052,6 +1330,7 @@ function doLogout() {
 //  MAIN VIEW SWITCH
 // ============================================================
 function switchMainView(view) {
+  state.currentView = view;
   ["predict","smoothie","leaderboard"].forEach(v => {
     document.getElementById(`view-${v}`).style.display = v === view ? (v === "predict" ? "grid" : "block") : "none";
     document.getElementById(`nav-${v}`).classList.toggle("active-tab", v === view);
@@ -1115,37 +1394,139 @@ function renderPhaseContent() {
 
   const isDisabled = locked || globallyLocked;
 
-  // Render match cards
+  // A match phase is "not ready" if every match still has placeholder teams
+  const isMatchPhase = !phase.isGroupStage;
+  const notReady = isMatchPhase && phase.matches.length > 0 &&
+    phase.matches.every(m => isPlaceholder(m.teamA) || isPlaceholder(m.teamB));
+
+  // Helpful, phase-specific hint when the phase is open
+  if (!locked && !globallyLocked && !gs.hasResults) {
+    if (notReady) {
+      hint.textContent = `Teams will appear here once the previous phase is decided.`;
+    } else if (phase.isGroupStage) {
+      hint.textContent = `Pick 1 team to advance in each group — get ${needToWin(phase)} of ${phase.groups.length} right to win!`;
+    } else if (phase.isThreshold) {
+      hint.textContent = `Pick a winner in all ${phase.matches.length} matches — get ${needToWin(phase)} right to win!`;
+    } else {
+      hint.textContent = `Lock your prediction before this phase kicks off!`;
+    }
+  }
+  if (notReady && !locked && !globallyLocked) {
+    badge.textContent = "⏳ Awaiting Results";
+    badge.className   = "badge badge-results";
+  }
+
+  // Render body
   const container = document.getElementById("match-cards");
   container.innerHTML = "";
-  phase.matches.forEach((match, idx) => {
-    const key     = `${state.currentPhase}-${idx}`;
-    const picked  = state.predictions[key];
-    const resultRow = getResultForMatch(state.currentPhase, idx);
-    container.appendChild(buildMatchCard(match, idx, picked, isDisabled, resultRow));
-  });
+
+  if (phase.isGroupStage) {
+    renderGroupPicker(phase, isDisabled, container);
+  } else {
+    // Threshold phases get a stakes banner like the group stage
+    if (phase.isThreshold) {
+      const picked = phase.matches.filter((m, idx) => state.predictions[`${phase.id}-${idx}`]).length;
+      const banner = document.createElement("div");
+      banner.className = "group-banner";
+      banner.innerHTML = `
+        <div class="group-banner-rule">
+          <span class="stake-yum">🍓 ${needToWin(phase)}+ correct → ${esc(phase.yum)}</span>
+          <span class="stake-yuck">🤢 fewer → ${esc(phase.yuck)}</span>
+        </div>
+        <div class="group-progress"><strong>${picked} / ${phase.matches.length}</strong> picked</div>`;
+      container.appendChild(banner);
+    }
+
+    phase.matches.forEach((match, idx) => {
+      const key    = `${state.currentPhase}-${idx}`;
+      const picked = state.predictions[key];
+      container.appendChild(buildMatchCard(match, idx, picked, isDisabled));
+    });
+  }
 
   // Save button
   const saveBtn = document.getElementById("save-btn");
-  if (isDisabled) {
+  if (notReady && !isDisabled) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "⏳ Awaiting Results";
+  } else if (isDisabled) {
     saveBtn.disabled = true;
     saveBtn.textContent = locked ? "🔒 Phase Locked" : "⛔ Predictions Closed";
   } else {
-    saveBtn.disabled    = false;
-    saveBtn.textContent = "🔒 Lock In My Blender Picks";
+    saveBtn.disabled = false;
+    if (phase.isGroupStage)      saveBtn.textContent = `🔒 Lock In My ${phase.groups.length} Group Picks`;
+    else if (phase.isThreshold)  saveBtn.textContent = `🔒 Lock In My ${phase.matches.length} Picks`;
+    else                         saveBtn.textContent = `🔒 Lock In My Blender Picks`;
   }
 }
 
-// ── Mock result lookup (replace with live data if you add getResults endpoint)
-function getResultForMatch(phaseId, matchIdx) {
-  // Not exposed as a public endpoint, results only shown via getSmoothie
-  return null;
+// Minimum correct picks needed to win a threshold phase
+function needToWin(phase) {
+  const ratio = phase.passRatio || PHASE_THRESHOLDS[phase.id] || 0.6;
+  const total = phase.isGroupStage ? phase.groups.length : phase.matches.length;
+  return Math.ceil(ratio * total);
+}
+
+// ============================================================
+//  GROUP PICKER (Phase 1)
+// ============================================================
+function renderGroupPicker(phase, disabled, container) {
+  // Intro banner explaining the phase-wide stakes
+  const picked = phase.groups.filter((g, idx) => state.predictions[`1-${idx}`]).length;
+  const banner = document.createElement("div");
+  banner.className = "group-banner";
+  banner.innerHTML = `
+    <div class="group-banner-rule">
+      <span class="stake-yum">🍓 ${needToWin(phase)}+ correct → ${esc(phase.yum)}</span>
+      <span class="stake-yuck">🤢 fewer → ${esc(phase.yuck)}</span>
+    </div>
+    <div class="group-progress">
+      <strong>${picked} / ${phase.groups.length}</strong> groups picked
+    </div>`;
+  container.appendChild(banner);
+
+  // Grid of 12 group cards
+  const grid = document.createElement("div");
+  grid.className = "group-grid";
+
+  phase.groups.forEach((group, idx) => {
+    const key  = `1-${idx}`;
+    const pick = state.predictions[key];
+
+    // Did the real result land for this group? (from getSmoothie isn't per-group,
+    // so we only mark the selection here; correctness shows on the My Smoothie tab.)
+    const card = document.createElement("div");
+    card.className = "group-card" + (pick ? " has-pick" : "");
+
+    const head = document.createElement("div");
+    head.className = "group-card-head";
+    head.innerHTML = `<span>Group ${group.id}</span>${pick ? `<span class="group-tick">✓</span>` : ""}`;
+    card.appendChild(head);
+
+    group.teams.forEach(team => {
+      const btn = document.createElement("button");
+      btn.className = "group-team" + (pick === team.name ? " selected" : "");
+      btn.disabled  = disabled;
+      btn.innerHTML = `<span class="group-flag">${flagHTML(team.name, team.iso)}</span><span class="group-team-name">${esc(team.name)}</span>`;
+      btn.onclick   = () => pickTeam(1, idx, team.name);
+      card.appendChild(btn);
+    });
+
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
 }
 
 // ── Build a single match card ────────────────────────────────
-function buildMatchCard(match, idx, picked, disabled, result) {
+function buildMatchCard(match, idx, picked, disabled) {
+  const phase = PHASES.find(p => p.id === state.currentPhase);
+  const phLockA = isPlaceholder(match.teamA);
+  const phLockB = isPlaceholder(match.teamB);
+  const matchLocked = disabled || phLockA || phLockB; // can't pick an unknown match
+
   const card = document.createElement("div");
-  card.className = "match-card";
+  card.className = "match-card" + (phLockA || phLockB ? " awaiting" : "");
 
   const labelEl = document.createElement("div");
   labelEl.className = "match-label";
@@ -1156,10 +1537,10 @@ function buildMatchCard(match, idx, picked, disabled, result) {
 
   // Team A button
   const btnA = document.createElement("button");
-  btnA.className = "team-btn" + (picked === match.teamA ? " selected" : "");
-  btnA.disabled  = disabled;
-  btnA.innerHTML = `<div class="team-flag">${flagHTML(match.teamA)}</div><span>${match.teamA}</span>`;
-  btnA.onclick   = () => pickTeam(state.currentPhase, idx, match.teamA);
+  btnA.className = "team-btn" + (picked === match.teamA ? " selected" : "") + (phLockA ? " placeholder" : "");
+  btnA.disabled  = matchLocked;
+  btnA.innerHTML = `<div class="team-flag">${flagHTML(match.teamA)}</div><span>${esc(match.teamA)}</span>`;
+  if (!matchLocked) btnA.onclick = () => pickTeam(state.currentPhase, idx, match.teamA);
 
   const vs = document.createElement("div");
   vs.className   = "vs-divider";
@@ -1167,19 +1548,23 @@ function buildMatchCard(match, idx, picked, disabled, result) {
 
   // Team B button
   const btnB = document.createElement("button");
-  btnB.className = "team-btn" + (picked === match.teamB ? " selected" : "");
-  btnB.disabled  = disabled;
-  btnB.innerHTML = `<div class="team-flag">${flagHTML(match.teamB)}</div><span>${match.teamB}</span>`;
-  btnB.onclick   = () => pickTeam(state.currentPhase, idx, match.teamB);
+  btnB.className = "team-btn" + (picked === match.teamB ? " selected" : "") + (phLockB ? " placeholder" : "");
+  btnB.disabled  = matchLocked;
+  btnB.innerHTML = `<div class="team-flag">${flagHTML(match.teamB)}</div><span>${esc(match.teamB)}</span>`;
+  if (!matchLocked) btnB.onclick = () => pickTeam(state.currentPhase, idx, match.teamB);
 
   row.append(btnA, vs, btnB);
+  card.append(labelEl, row);
 
-  // Stakes
-  const stakes = document.createElement("div");
-  stakes.className = "stakes";
-  stakes.innerHTML = `<span class="stake-yum">🍓 Win: ${match.yum}</span><span class="stake-yuck">🤢 Lose: ${match.yuck}</span>`;
+  // Per-match stakes ONLY for per-match phases (4–6).
+  // Threshold phases (2–3) show one phase-wide banner instead.
+  if (!phase.isThreshold && !phLockA && !phLockB) {
+    const stakes = document.createElement("div");
+    stakes.className = "stakes";
+    stakes.innerHTML = `<span class="stake-yum">🍓 Win: ${esc(match.yum)}</span><span class="stake-yuck">🤢 Lose: ${esc(match.yuck)}</span>`;
+    card.appendChild(stakes);
+  }
 
-  card.append(labelEl, row, stakes);
   return card;
 }
 
@@ -1197,21 +1582,29 @@ function pickTeam(phaseId, matchIdx, team) {
 //  SAVE PREDICTIONS
 // ============================================================
 async function savePredictions() {
-  const phase = state.currentPhase;
-
-  // Gather predictions for this phase
-  const phaseMatches = PHASES.find(p => p.id === phase).matches;
-  const predictions  = [];
+  const phase    = state.currentPhase;
+  const phaseObj = PHASES.find(p => p.id === phase);
+  const predictions = [];
   let allPicked = true;
 
-  phaseMatches.forEach((_, idx) => {
-    const key  = `${phase}-${idx}`;
-    const pred = state.predictions[key];
-    if (!pred) allPicked = false;
-    else predictions.push({ matchIndex: idx, prediction: pred });
-  });
-
-  if (!allPicked) { toast("Pick a winner for every match first!", "error"); return; }
+  if (phaseObj.isGroupStage) {
+    phaseObj.groups.forEach((g, idx) => {
+      const pick = state.predictions[`${phase}-${idx}`];
+      if (!pick) allPicked = false;
+      else predictions.push({ matchIndex: idx, prediction: pick });
+    });
+    if (!allPicked) { toast(`Pick a team in all ${phaseObj.groups.length} groups first!`, "error"); return; }
+  } else {
+    phaseObj.matches.forEach((m, idx) => {
+      // Can't pick a match whose teams aren't known yet — skip it
+      if (isPlaceholder(m.teamA) || isPlaceholder(m.teamB)) return;
+      const pick = state.predictions[`${phase}-${idx}`];
+      if (!pick) allPicked = false;
+      else predictions.push({ matchIndex: idx, prediction: pick });
+    });
+    if (predictions.length === 0) { toast("No matches are ready to pick yet.", "error"); return; }
+    if (!allPicked) { toast("Pick a winner for every match first!", "error"); return; }
+  }
 
   setLoading("save-btn", true);
   try {
@@ -1252,6 +1645,26 @@ function updateBlender() {
   const breakdown = (state.smoothie && state.smoothie.breakdown) || [];
 
   PHASES.forEach(phase => {
+    // ── PHASES 1–3: one ingredient for the whole phase ─────────
+    if (phase.isGroupStage || phase.isThreshold) {
+      const count = phase.isGroupStage ? phase.groups.length : phase.matches.length;
+      let hasPicks = false;
+      for (let i = 0; i < count; i++) {
+        if (state.predictions[`${phase.id}-${i}`]) { hasPicks = true; break; }
+      }
+      if (!hasPicks) return;
+      const resolved = breakdown.find(b => Number(b.phase) === phase.id);
+      if (resolved) {
+        layers.push({ kind: "resolved", type: resolved.type, name: resolved.name });
+        if (resolved.type === "yum") yumCount++; else yuckCount++;
+      } else {
+        layers.push({ kind: "pending", name: phase.name });
+        pendingCount++;
+      }
+      return;
+    }
+
+    // ── PHASES 4–6: per-match ──────────────────────────────────
     phase.matches.forEach((match, idx) => {
       const key  = `${phase.id}-${idx}`;
       const pick = state.predictions[key];
@@ -1347,66 +1760,124 @@ async function loadLeaderboard() {
 // ============================================================
 //  MY SMOOTHIE
 // ============================================================
+// Builds one progress card for a threshold phase (e.g. "3 of 16 results in")
+function buildProgressCard(pr) {
+  const pctDecided = Math.round((pr.decided / pr.total) * 100);
+  const maxWrongAllowed = pr.total - pr.needed; // can't exceed this and still win
+
+  // Status line
+  let status, statusClass;
+  if (pr.resolved) {
+    status = pr.passed ? `🎉 Won! Earned 🍓 ${esc(pr.yum)}` : `😬 Missed it — got 🤢 ${esc(pr.yuck)}`;
+    statusClass = pr.passed ? "prog-status-win" : "prog-status-loss";
+  } else if (pr.correct >= pr.needed) {
+    status = `🎉 Yum already secured — ${esc(pr.yum)}!`;
+    statusClass = "prog-status-win";
+  } else if (pr.wrong > maxWrongAllowed) {
+    status = `😬 Yuck locked in — ${esc(pr.yuck)}`;
+    statusClass = "prog-status-loss";
+  } else {
+    status = `Need ${pr.needed} of ${pr.total} correct → 🍓 ${esc(pr.yum)}`;
+    statusClass = "prog-status-neutral";
+  }
+
+  const matchesHtml = pr.matches.map(m => `
+    <div class="prog-match">
+      <span class="prog-mark ${m.correct ? "ok" : "no"}">${m.correct ? "✓" : "✗"}</span>
+      <span class="prog-match-label">${esc(m.label)}</span>
+      <span class="prog-match-detail">${esc(m.predicted || "—")} → <strong>${esc(m.actual)}</strong></span>
+    </div>`).join("");
+
+  return `
+    <div class="prog-card">
+      <div class="prog-head">
+        <span class="prog-title">${esc(pr.label)}</span>
+        <span class="prog-count">${pr.decided} / ${pr.total} results in</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pctDecided}%"></div></div>
+      <div class="prog-stats">
+        <span class="count-yum">✓ ${pr.correct} correct</span>
+        <span class="count-yuck">✗ ${pr.wrong} wrong</span>
+      </div>
+      <div class="prog-status ${statusClass}">${status}</div>
+      <div class="prog-matches">${matchesHtml}</div>
+    </div>`;
+}
+
 async function loadSmoothie() {
   const content = document.getElementById("smoothie-content");
   content.innerHTML = `<div class="empty-state"><div class="spinner"></div></div>`;
   try {
     const data = await apiGet({ action: "getSmoothie", username: state.username, pin: state.pin });
     if (!data.success) { content.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div>${esc(data.error)}</div>`; return; }
-
-    // Cache fresh results and refresh the glass on the predict screen
     state.smoothie = data;
     updateBlender();
-
-    const { yumIngredients, yuckIngredients, totalYum, totalYuck, rating, breakdown } = data;
-
-    if ((breakdown || []).length === 0) {
-      content.innerHTML = `
-        <div class="empty-state">
-          <div class="icon">⏳</div>
-          <div>No results yet — check back after matches are played!</div>
-          <div class="mt-8 text-muted" style="font-size:12px;">Your smoothie is being brewed...</div>
-        </div>`;
-      return;
-    }
-
-    const yumHtml  = (yumIngredients  || []).map(i => `<div class="ingredient-chip yum">🍓 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet</div>`;
-    const yuckHtml = (yuckIngredients || []).map(i => `<div class="ingredient-chip yuck">🤢 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet!</div>`;
-
-    content.innerHTML = `
-      <div class="card fade-up" style="margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <div style="font-family:var(--font-head);font-size:22px;">${esc(rating)}</div>
-          <div style="display:flex;gap:12px;">
-            <span class="count-yum">🍓 ${totalYum} Yum</span>
-            <span class="count-yuck">🤢 ${totalYuck} Yuck</span>
-          </div>
-        </div>
-        <hr class="divider" />
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">🍓 Yum Ingredients</div>
-        <div class="ingredient-grid">${yumHtml}</div>
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">🤢 Yuck Ingredients</div>
-        <div class="ingredient-grid">${yuckHtml}</div>
-      </div>
-      <div style="font-family:var(--font-head);font-size:18px;margin-bottom:12px;">Match Breakdown</div>
-      ${(breakdown||[]).map(item => `
-        <div class="lb-row">
-          <div style="font-size:20px;">${item.type === 'yum' ? '🍓' : '🤢'}</div>
-          <div style="flex:1;">
-            <div style="font-weight:800;font-size:13px;">Phase ${item.phase}: ${esc(item.label)}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px;">
-              You picked: <strong>${esc(item.predicted)}</strong> · Result: <strong>${esc(item.actual)}</strong>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:800;color:${item.type==='yum'?'var(--green)':'var(--red)'};">
-            ${esc(item.name)}
-          </div>
-        </div>
-      `).join("")}
-    `;
+    renderSmoothie(data);
   } catch(e) {
     content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Network error.</div>`;
   }
+}
+
+// Renders the My Smoothie tab from a data object (no fetching / no spinner).
+function renderSmoothie(data) {
+  const content = document.getElementById("smoothie-content");
+  if (!data) return;
+
+  const { yumIngredients, yuckIngredients, totalYum, totalYuck, rating, breakdown } = data;
+  const progress = data.progress || [];
+
+  if ((breakdown || []).length === 0 && progress.length === 0) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⏳</div>
+        <div>No results yet — check back after matches are played!</div>
+        <div class="mt-8 text-muted" style="font-size:12px;">Your smoothie is being brewed...</div>
+      </div>`;
+    return;
+  }
+
+  const yumHtml  = (yumIngredients  || []).map(i => `<div class="ingredient-chip yum">🍓 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet</div>`;
+  const yuckHtml = (yuckIngredients || []).map(i => `<div class="ingredient-chip yuck">🤢 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet!</div>`;
+
+  // Per-match breakdown excludes threshold phases (1–3) — those show in the
+  // progress section below with full per-match detail.
+  const perMatch = (breakdown || []).filter(b => PHASE_THRESHOLDS[b.phase] === undefined);
+  const progressHtml = progress.map(buildProgressCard).join("");
+
+  content.innerHTML = `
+    <div class="card fade-up" style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-family:var(--font-head);font-size:22px;">${esc(rating)}</div>
+        <div style="display:flex;gap:12px;">
+          <span class="count-yum">🍓 ${totalYum} Yum</span>
+          <span class="count-yuck">🤢 ${totalYuck} Yuck</span>
+        </div>
+      </div>
+      <hr class="divider" />
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">🍓 Yum Ingredients</div>
+      <div class="ingredient-grid">${yumHtml}</div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">🤢 Yuck Ingredients</div>
+      <div class="ingredient-grid">${yuckHtml}</div>
+    </div>
+
+    ${progress.length ? `<div style="font-family:var(--font-head);font-size:18px;margin-bottom:12px;">Phase Progress</div>${progressHtml}` : ""}
+
+    ${perMatch.length ? `<div style="font-family:var(--font-head);font-size:18px;margin:18px 0 12px;">Match Breakdown</div>
+    ${perMatch.map(item => `
+      <div class="lb-row">
+        <div style="font-size:20px;">${item.type === 'yum' ? '🍓' : '🤢'}</div>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:13px;">${esc(item.label)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+            You picked: <strong>${esc(item.predicted)}</strong> · Result: <strong>${esc(item.actual)}</strong>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:800;color:${item.type==='yum'?'var(--green)':'var(--red)'};">
+          ${esc(item.name)}
+        </div>
+      </div>
+    `).join("")}` : ""}
+  `;
 }
 
 // ============================================================
@@ -1429,6 +1900,21 @@ function esc(str) {
   if (!str) return "";
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
+
+// ============================================================
+//  INIT — restore session on page load
+// ============================================================
+(function init() {
+  const saved = loadSession();
+  if (saved && saved.username && saved.pin) {
+    // Show a quick loading hint on the auth screen while we re-auth
+    const btn = document.getElementById("login-btn");
+    if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>`; }
+    autoLogin(saved.username, saved.pin).finally(() => {
+      if (btn) { btn.disabled = false; btn.textContent = "🚀 Let's Go!"; }
+    });
+  }
+})();
 </script>
 </body>
 </html>

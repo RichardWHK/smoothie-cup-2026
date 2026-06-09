@@ -56,7 +56,7 @@
     /* Glow blobs */
     .blob {
       position: fixed; border-radius: 50%; filter: blur(120px);
-      pointer-events: none; z-index: 0; opacity: .25;
+      pointer-events: none; z-index: 0; opacity: .22;
     }
     .blob-1 { width: 600px; height: 600px; background: #f97316; top: -200px; left: -200px; animation: drift 18s ease-in-out infinite alternate; }
     .blob-2 { width: 500px; height: 500px; background: #ec4899; bottom: -150px; right: -150px; animation: drift 22s ease-in-out infinite alternate-reverse; }
@@ -65,6 +65,32 @@
     @keyframes drift {
       from { transform: translate(0, 0) scale(1); }
       to   { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    /* Grass pitch along the bottom (mowed stripes + faint pitch markings) */
+    .pitch {
+      position: fixed; left: 0; right: 0; bottom: 0; height: 38vh;
+      z-index: 0; pointer-events: none;
+      background:
+        repeating-linear-gradient(90deg,
+          rgba(20,83,45,.55) 0px, rgba(20,83,45,.55) 48px,
+          rgba(22,101,52,.55) 48px, rgba(22,101,52,.55) 96px);
+      -webkit-mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+              mask-image: linear-gradient(to top, #000 0%, #000 35%, transparent 100%);
+      opacity: .5;
+    }
+    .pitch::before { /* centre line + circle, faint */
+      content: '';
+      position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+      width: 220px; height: 220px; border: 2px solid rgba(255,255,255,.12);
+      border-radius: 50%;
+    }
+
+    /* Generic gold trophy watermark, centred and faint */
+    .trophy-bg {
+      position: fixed; top: 12%; left: 50%; transform: translateX(-50%);
+      width: min(520px, 80vw); z-index: 0; pointer-events: none;
+      opacity: .06;
     }
 
     /* ── LAYOUT ──────────────────────────────────────────── */
@@ -226,9 +252,56 @@
       grid-template-columns: 1fr 320px;
       gap: 20px;
     }
+
+    /* Tablet & below: single column, glass sits BELOW the picks */
     @media (max-width: 860px) {
       .app-grid { grid-template-columns: 1fr; }
-      .blender-col { order: -1; }
+      .blender-col { position: static; order: 2; }
+      .blender-card { max-width: 420px; margin: 0 auto; }
+    }
+
+    /* Phone polish */
+    @media (max-width: 600px) {
+      header { padding: 24px 16px 18px; }
+      .app-grid, .player-bar, .lb-wrap, .smoothie-wrap, .auth-wrap { padding-left: 12px; padding-right: 12px; }
+      .player-bar { margin-bottom: 14px; }
+      .player-name { font-size: 19px; }
+      .player-avatar { width: 40px; height: 40px; font-size: 17px; }
+
+      /* Nav becomes a horizontal scroll strip instead of wrapping */
+      .nav-btns {
+        flex-wrap: nowrap; overflow-x: auto; width: 100%;
+        scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+      }
+      .nav-btns::-webkit-scrollbar { display: none; }
+      .nav-btn { flex-shrink: 0; padding: 8px 13px; }
+
+      .phase-header { padding: 14px 16px; }
+      .phase-title { font-size: 19px; }
+      .match-card { padding: 14px; }
+      .team-btn { padding: 11px 8px; font-size: 12px; }
+      .team-flag img { height: 26px !important; }
+      .vs-divider { font-size: 14px; }
+
+      /* Group cards: 2 across on phones */
+      .group-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .group-card { padding: 9px; }
+      .group-team { padding: 7px 8px; font-size: 11px; gap: 7px; }
+
+      .ingredient-grid { grid-template-columns: 1fr; }
+      .cd-unit { min-width: 38px; padding: 4px 6px; }
+      .cd-num { font-size: 17px; }
+
+      /* Slightly smaller glass on phones */
+      .glass, .glass-wrap { width: 132px; }
+      .glass { height: 220px; }
+      .glass-rim { width: 146px; }
+    }
+
+    /* Very narrow: groups go single column for legibility */
+    @media (max-width: 380px) {
+      .group-grid { grid-template-columns: 1fr; }
     }
 
     /* ── PLAYER BAR ──────────────────────────────────────── */
@@ -329,8 +402,10 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 22px;
+      padding: 16px 20px;
       margin-bottom: 16px;
+    }
+    .phase-header-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -351,6 +426,38 @@
     .badge-open    { background: rgba(34,197,94,.15);  color: var(--green); border: 1px solid rgba(34,197,94,.3); }
     .badge-locked  { background: rgba(239,68,68,.1);   color: var(--red);   border: 1px solid rgba(239,68,68,.3); }
     .badge-results { background: rgba(245,158,11,.1);  color: var(--gold);  border: 1px solid rgba(245,158,11,.3); }
+
+    /* Countdown widget */
+    .countdown {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .countdown.hidden { display: none; }
+    .countdown-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+      margin-right: 2px;
+    }
+    .cd-unit {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      min-width: 44px;
+    }
+    .cd-num {
+      font-family: var(--font-head); font-size: 20px; line-height: 1;
+      color: var(--text); font-variant-numeric: tabular-nums;
+    }
+    .cd-tag { font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+    .countdown.urgent .cd-num { color: var(--gold); }
+    .countdown.expired {
+      font-size: 12px; font-weight: 800; color: var(--red);
+    }
 
     /* ── MATCH CARDS ─────────────────────────────────────── */
     .match-card {
@@ -551,13 +658,13 @@
     .blender-sub   { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
 
     /* The glass */
-    .glass-wrap { position: relative; width: 140px; margin: 0 auto 12px; }
+    .glass-wrap { position: relative; width: 150px; margin: 0 auto 12px; }
     .glass {
-      width: 140px; height: 220px;
+      width: 150px; height: 250px;
       position: relative;
       border: 3px solid rgba(255,255,255,.15);
       border-top: none;
-      border-radius: 0 0 28px 28px;
+      border-radius: 0 0 30px 30px;
       overflow: hidden;
       background: rgba(255,255,255,.03);
       backdrop-filter: blur(4px);
@@ -570,6 +677,7 @@
       background: linear-gradient(to bottom, rgba(255,255,255,.12), transparent);
       border-radius: 3px;
       pointer-events: none;
+      z-index: 3;
     }
     .glass-empty {
       position: absolute; inset: 0;
@@ -581,28 +689,35 @@
       text-align: center;
       line-height: 1.5;
     }
+    /* Layers fill the glass and share its height — so 2 or 12 both fit. */
     .glass-layers {
       position: absolute;
       bottom: 0; left: 0; right: 0;
+      top: 0;
       display: flex;
       flex-direction: column-reverse;
+      justify-content: flex-start;
     }
     .glass-layer {
-      height: 30px;
+      flex: 1 1 0;
+      min-height: 0;
+      max-height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
-      border-top: 1px solid rgba(255,255,255,.08);
+      border-top: 1px solid rgba(255,255,255,.1);
       transition: all .4s cubic-bezier(.34,1.56,.64,1);
       overflow: hidden;
       white-space: nowrap;
+      text-overflow: ellipsis;
       padding: 0 6px;
       gap: 4px;
+      line-height: 1;
     }
-    .layer-yum  { background: linear-gradient(90deg, rgba(34,197,94,.5), rgba(16,185,129,.4)); color: #fff; }
-    .layer-yuck { background: linear-gradient(90deg, rgba(239,68,68,.5), rgba(220,38,38,.4));  color: #fff; }
+    .layer-yum  { background: linear-gradient(90deg, rgba(34,197,94,.55), rgba(16,185,129,.45)); color: #fff; }
+    .layer-yuck { background: linear-gradient(90deg, rgba(239,68,68,.55), rgba(220,38,38,.45));  color: #fff; }
     .layer-pending {
       background: repeating-linear-gradient(45deg, rgba(122,127,154,.25), rgba(122,127,154,.25) 6px, rgba(122,127,154,.15) 6px, rgba(122,127,154,.15) 12px);
       color: var(--muted);
@@ -611,7 +726,7 @@
 
     /* Glass rim + straw */
     .glass-rim {
-      width: 154px;
+      width: 164px;
       height: 10px;
       background: rgba(255,255,255,.1);
       border-radius: 5px 5px 0 0;
@@ -793,6 +908,31 @@
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 
+<!-- Grass pitch -->
+<div class="pitch"></div>
+
+<!-- Generic gold trophy watermark -->
+<svg class="trophy-bg" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+  <!-- handles -->
+  <path d="M50 40 C20 40 20 95 60 100" fill="none" stroke="url(#goldGrad)" stroke-width="9"/>
+  <path d="M150 40 C180 40 180 95 140 100" fill="none" stroke="url(#goldGrad)" stroke-width="9"/>
+  <!-- cup bowl -->
+  <path d="M48 36 H152 V70 C152 110 125 138 100 138 C75 138 48 110 48 70 Z" fill="url(#goldGrad)"/>
+  <!-- stem -->
+  <rect x="92" y="138" width="16" height="34" fill="url(#goldGrad)"/>
+  <!-- base -->
+  <path d="M66 172 H134 L126 196 H74 Z" fill="url(#goldGrad)"/>
+  <rect x="56" y="196" width="88" height="14" rx="3" fill="url(#goldGrad)"/>
+  <rect x="48" y="210" width="104" height="16" rx="4" fill="url(#goldGrad)"/>
+</svg>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -886,11 +1026,14 @@
 
         <!-- Phase header -->
         <div class="phase-header" id="phase-header">
-          <div>
-            <div class="phase-title" id="phase-title">Loading...</div>
-            <div class="phase-hint" id="phase-hint">Lock your picks before this phase starts!</div>
+          <div class="phase-header-top">
+            <div>
+              <div class="phase-title" id="phase-title">Loading...</div>
+              <div class="phase-hint" id="phase-hint">Lock your picks before this phase starts!</div>
+            </div>
+            <span class="badge badge-open" id="phase-badge">Open</span>
           </div>
-          <span class="badge badge-open" id="phase-badge">Open</span>
+          <div class="countdown" id="countdown"></div>
         </div>
 
         <!-- Match cards -->
@@ -1020,6 +1163,26 @@ const GROUP_STAGE_DATA = [
 //   Phase 3 (8 matches):  60% → 5+ correct
 // Phases NOT listed here (4,5,6) use per-match scoring.
 const PHASE_THRESHOLDS = { 1: 0.60, 2: 0.50, 3: 0.60 };
+
+// ── PHASE LOCKOUT DEADLINES (New Zealand time) ───────────────
+// June–July 2026 is NZ winter → NZST = UTC+12 (the +12:00 offset
+// makes these absolute instants, correct in any viewer's timezone).
+const PHASE_DEADLINES = {
+  1: "2026-06-12T11:00:00+12:00", // Groups
+  2: "2026-06-28T07:00:00+12:00", // Round of 32
+  3: "2026-07-05T07:00:00+12:00", // Round of 16
+  4: "2026-07-10T10:00:00+12:00", // Quarter-Finals
+  5: "2026-07-15T10:00:00+12:00", // Semi-Finals
+  6: "2026-07-20T07:00:00+12:00", // Grand Final
+};
+function getDeadline(phaseId) {
+  const iso = PHASE_DEADLINES[phaseId];
+  return iso ? new Date(iso) : null;
+}
+function isPastDeadline(phaseId) {
+  const d = getDeadline(phaseId);
+  return d ? Date.now() >= d.getTime() : false;
+}
 
 // A team name is a placeholder when its real identity isn't known yet
 // (e.g. "Awaiting results from phase 1"). Such matches can't be picked.
@@ -1312,6 +1475,7 @@ async function bootApp() {
   state.currentView = "predict";
   showScreen("screen-app");
   startPolling(); // live updates on results night
+  startCountdownTicker(); // live deadline countdown
 }
 
 // ============================================================
@@ -1319,6 +1483,7 @@ async function bootApp() {
 // ============================================================
 function doLogout() {
   stopPolling();
+  stopCountdownTicker();
   clearSession();
   state = { username:null,pin:null,displayName:null,phaseLocks:{},phaseGlobalStatus:{},predictions:{},smoothie:null,currentPhase:1,currentView:"predict",loading:false };
   switchMainView("predict");
@@ -1374,7 +1539,13 @@ function renderPhaseContent() {
   const badge = document.getElementById("phase-badge");
   const hint  = document.getElementById("phase-hint");
 
-  if (locked) {
+  const deadlinePassed = isPastDeadline(phase.id);
+
+  if (deadlinePassed && !gs.hasResults) {
+    badge.textContent = "🔒 LOCKED";
+    badge.className   = "badge badge-locked";
+    hint.textContent  = "The deadline for this phase has passed — picks are locked.";
+  } else if (locked) {
     badge.textContent = "🔒 Your picks are locked";
     badge.className   = "badge badge-locked";
     hint.textContent  = "You've locked in your predictions for this phase.";
@@ -1392,7 +1563,7 @@ function renderPhaseContent() {
     hint.textContent  = "Lock your prediction before this phase kicks off!";
   }
 
-  const isDisabled = locked || globallyLocked;
+  const isDisabled = locked || globallyLocked || deadlinePassed;
 
   // A match phase is "not ready" if every match still has placeholder teams
   const isMatchPhase = !phase.isGroupStage;
@@ -1400,7 +1571,7 @@ function renderPhaseContent() {
     phase.matches.every(m => isPlaceholder(m.teamA) || isPlaceholder(m.teamB));
 
   // Helpful, phase-specific hint when the phase is open
-  if (!locked && !globallyLocked && !gs.hasResults) {
+  if (!locked && !globallyLocked && !gs.hasResults && !deadlinePassed) {
     if (notReady) {
       hint.textContent = `Teams will appear here once the previous phase is decided.`;
     } else if (phase.isGroupStage) {
@@ -1449,6 +1620,9 @@ function renderPhaseContent() {
   if (notReady && !isDisabled) {
     saveBtn.disabled = true;
     saveBtn.textContent = "⏳ Awaiting Results";
+  } else if (deadlinePassed && !locked) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "🔒 Deadline Passed";
   } else if (isDisabled) {
     saveBtn.disabled = true;
     saveBtn.textContent = locked ? "🔒 Phase Locked" : "⛔ Predictions Closed";
@@ -1458,6 +1632,84 @@ function renderPhaseContent() {
     else if (phase.isThreshold)  saveBtn.textContent = `🔒 Lock In My ${phase.matches.length} Picks`;
     else                         saveBtn.textContent = `🔒 Lock In My Blender Picks`;
   }
+
+  renderCountdown(phase.id);
+}
+
+// ============================================================
+//  COUNTDOWN WIDGET
+// ============================================================
+function renderCountdown(phaseId) {
+  const el = document.getElementById("countdown");
+  if (!el) return;
+  const deadline = getDeadline(phaseId);
+  if (!deadline) { el.className = "countdown hidden"; el.innerHTML = ""; return; }
+
+  const diff = deadline.getTime() - Date.now();
+
+  if (diff <= 0) {
+    el.className = "countdown expired";
+    el.innerHTML = `🔒 Locked — deadline passed (${fmtDeadline(deadline)} NZ)`;
+    return;
+  }
+
+  const secs  = Math.floor(diff / 1000);
+  const days  = Math.floor(secs / 86400);
+  const hours = Math.floor((secs % 86400) / 3600);
+  const mins  = Math.floor((secs % 3600) / 60);
+  const ss    = secs % 60;
+
+  const urgent = diff < 60 * 60 * 1000; // under 1 hour
+  el.className = "countdown" + (urgent ? " urgent" : "");
+  el.innerHTML = `
+    <span class="countdown-label">Locks in</span>
+    ${cdUnit(days, "Days")}
+    ${cdUnit(hours, "Hrs")}
+    ${cdUnit(mins, "Min")}
+    ${cdUnit(ss, "Sec")}`;
+}
+
+function cdUnit(n, tag) {
+  return `<span class="cd-unit"><span class="cd-num">${String(n).padStart(2,"0")}</span><span class="cd-tag">${tag}</span></span>`;
+}
+
+function fmtDeadline(d) {
+  // Show the deadline in NZ time regardless of the viewer's location
+  try {
+    return d.toLocaleString("en-NZ", {
+      timeZone: "Pacific/Auckland",
+      weekday: "short", day: "numeric", month: "short",
+      hour: "numeric", minute: "2-digit",
+    });
+  } catch(e) {
+    return d.toISOString();
+  }
+}
+
+// 1-second ticker: updates the active phase countdown; re-renders the
+// phase (to lock buttons) at the moment a deadline passes.
+let countdownTimer = null;
+function startCountdownTicker() {
+  stopCountdownTicker();
+  countdownTimer = setInterval(() => {
+    if (!state.username || state.currentView !== "predict") return;
+    const phaseId = state.currentPhase;
+    const wasPast = countdownTimer._past && countdownTimer._past[phaseId];
+    const nowPast = isPastDeadline(phaseId);
+    renderCountdown(phaseId);
+    // The instant a deadline flips, re-render so buttons lock immediately
+    if (nowPast && !wasPast) {
+      countdownTimer._past = countdownTimer._past || {};
+      countdownTimer._past[phaseId] = true;
+      renderPhaseContent();
+      renderPhaseTabs();
+      updateBlender();
+    }
+  }, 1000);
+  countdownTimer._past = {};
+}
+function stopCountdownTicker() {
+  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
 }
 
 // Minimum correct picks needed to win a threshold phase

@@ -31,14 +31,29 @@
 
     /* ── RESET & BASE ────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: clip; max-width: 100%; }
     body {
       font-family: var(--font-body);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow-x: clip;
+      max-width: 100%;
+      position: relative;
     }
+
+    /* ── HORIZONTAL-OVERFLOW SAFETY (real mobile devices) ──
+       Stops long text / non-shrinking flex & grid items from
+       pushing the page wider than the screen. */
+    img, svg { max-width: 100%; }
+    .team-btn, .group-team, .howto-step, .prog-match, .lb-row,
+    .match-card, .group-card, .phase-header, .countdown { min-width: 0; }
+    .lb-row > div { min-width: 0; }
+    .team-btn > span, .group-team-name, .howto-text,
+    .lb-name, .prog-match-label, .phase-title, .match-label {
+      min-width: 0; overflow-wrap: anywhere;
+    }
+    .prog-match-detail { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
     /* Animated starfield bg */
     body::before {
@@ -223,6 +238,75 @@
     .btn-green:hover { filter: brightness(1.1); }
     .btn-sm { font-size: 14px; padding: 10px 18px; width: auto; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── LINK BUTTON ─────────────────────────────────────── */
+    .link-btn {
+      display: block; margin: 22px auto 0;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-family: var(--font-body);
+      font-size: 14px; font-weight: 800; letter-spacing: .3px;
+      transition: color .2s;
+    }
+    .link-btn:hover { color: var(--gold); }
+
+    /* ── HOW IT WORKS MODAL ──────────────────────────────── */
+    .howto-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(8,10,16,.72);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-start; justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+    .howto-overlay.show { display: flex; }
+    .howto-modal {
+      position: relative;
+      width: 100%; max-width: 600px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 26px 26px;
+      margin: auto;
+      animation: fadeUp .3s ease both;
+    }
+    .howto-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 15px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .howto-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+    .howto-header { text-align: center; margin-bottom: 24px; }
+    .howto-emoji { font-size: 34px; }
+    .howto-header h2 {
+      font-family: var(--font-head); font-size: 28px; margin-top: 6px;
+      background: linear-gradient(135deg, #fff 20%, var(--gold) 70%, var(--orange) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .howto-header p { color: var(--muted); font-size: 13px; font-weight: 700; margin-top: 4px; }
+    .howto-steps { display: flex; flex-direction: column; gap: 14px; }
+    .howto-step { display: flex; gap: 14px; align-items: flex-start; }
+    .howto-num {
+      flex-shrink: 0;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--orange), var(--pink));
+      color: #fff; font-family: var(--font-head); font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .howto-text h3 { font-family: var(--font-head); font-size: 18px; margin-bottom: 3px; }
+    .howto-text p { font-size: 13.5px; color: var(--text); line-height: 1.5; opacity: .9; }
+    .howto-text p + p { margin-top: 6px; }
+    .howto-finale .howto-num {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      font-size: 16px;
+    }
+    .howto-finale .howto-text h3 { color: var(--gold); }
+    .t-yum  { color: var(--green); font-weight: 800; }
+    .t-yuck { color: var(--red);   font-weight: 800; }
+    .howto-cta { margin-top: 24px; }
 
     /* ── TOAST ───────────────────────────────────────────── */
     #toast {
@@ -936,6 +1020,92 @@
 <!-- Toast -->
 <div id="toast"></div>
 
+<!-- ══════════════════════════════════════════════════════
+     HOW IT WORKS — overlay (available logged in OR out)
+═══════════════════════════════════════════════════════ -->
+<div id="howto-overlay" class="howto-overlay" onclick="if(event.target===this) closeHowItWorks()">
+  <div class="howto-modal">
+    <button class="howto-close" onclick="closeHowItWorks()" aria-label="Close">✕</button>
+
+    <div class="howto-header">
+      <div class="howto-emoji">🥤⚽</div>
+      <h2>How the Smoothie Cup Works</h2>
+      <p>Predict the World Cup. Build a smoothie. Drink your destiny.</p>
+    </div>
+
+    <div class="howto-steps">
+
+      <div class="howto-step">
+        <div class="howto-num">1</div>
+        <div class="howto-text">
+          <h3>The big idea</h3>
+          <p>You predict what happens in the 2026 World Cup. Get a pick <strong>right</strong> and you earn a tasty <span class="t-yum">🍓 Yum</span> ingredient. Get it <strong>wrong</strong> and you're stuck with a gross <span class="t-yuck">🤢 Yuck</span> one. At the very end, everyone blends their real-life ingredients into a smoothie… and drinks it. 😬</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">2</div>
+        <div class="howto-text">
+          <h3>Sign up</h3>
+          <p>Pick a username and a short PIN (4–8 digits). That's your login — no email needed. Your picks are saved automatically and you stay logged in between visits.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">3</div>
+        <div class="howto-text">
+          <h3>Make your picks, phase by phase</h3>
+          <p>The tournament runs in <strong>6 phases</strong>. Each one has a <strong>countdown timer</strong> showing how long until picks lock. Get them in before the clock hits zero!</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">4</div>
+        <div class="howto-text">
+          <h3>Two kinds of phases</h3>
+          <p><strong>Big rounds</strong> (Group Stage, Round of 32, Round of 16) are scored as a whole: hit the target number of correct picks and you win that phase's single <span class="t-yum">🍓 Yum</span> — miss it and you get the <span class="t-yuck">🤢 Yuck</span>.</p>
+          <p><strong>Knockout rounds</strong> (Quarter-Finals, Semis, Final) are scored per match: every match winner you nail adds a <span class="t-yum">🍓 Yum</span>, every miss adds a <span class="t-yuck">🤢 Yuck</span>.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">5</div>
+        <div class="howto-text">
+          <h3>Lock it in</h3>
+          <p>When you're happy, hit <strong>Lock In</strong>. Picks can't be changed after that (or once the deadline passes), so choose wisely!</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">6</div>
+        <div class="howto-text">
+          <h3>Watch your glass fill up</h3>
+          <p>As real matches finish, your <strong>My Smoothie</strong> glass fills with the ingredients you've earned, and progress bars show how each big round is tracking — live, no refresh needed.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-num">7</div>
+        <div class="howto-text">
+          <h3>Climb the leaderboard</h3>
+          <p>The <strong>Leaderboard</strong> ranks everyone by how many <span class="t-yum">🍓 Yums</span> they've collected. The more correct predictions, the tastier your smoothie — and the higher you climb.</p>
+        </div>
+      </div>
+
+      <div class="howto-step howto-finale">
+        <div class="howto-num">🏆</div>
+        <div class="howto-text">
+          <h3>The Grand Blend</h3>
+          <p>When the final whistle blows, gather your ingredients in real life, blend them together, and drink up. Best predictor gets the tastiest cup. Worst gets… the celery. 🥬</p>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="btn btn-primary howto-cta" onclick="closeHowItWorks()">Got it — let's play! 🚀</button>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ── HEADER ─────────────────────────────────────────── -->
@@ -992,6 +1162,8 @@
       </button>
     </div>
 
+    <button class="link-btn" onclick="openHowItWorks()">❓ New here? See how it works</button>
+
   </div>
 
   <!-- ══════════════════════════════════════════════════════
@@ -1012,6 +1184,7 @@
         <button class="nav-btn active-tab" id="nav-predict" onclick="switchMainView('predict')">⚽ Predict</button>
         <button class="nav-btn"            id="nav-smoothie" onclick="switchMainView('smoothie')">🥤 My Smoothie</button>
         <button class="nav-btn"            id="nav-leaderboard" onclick="switchMainView('leaderboard')">🏆 Leaderboard</button>
+        <button class="nav-btn"            id="nav-howto" onclick="openHowItWorks()">❓ How It Works</button>
         <button class="nav-btn"            id="nav-logout" onclick="doLogout()">↩ Logout</button>
       </div>
     </div>
@@ -1303,6 +1476,21 @@ function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
+
+// ============================================================
+//  HOW IT WORKS MODAL
+// ============================================================
+function openHowItWorks() {
+  const ov = document.getElementById("howto-overlay");
+  ov.classList.add("show");
+  ov.scrollTop = 0;
+}
+function closeHowItWorks() {
+  document.getElementById("howto-overlay").classList.remove("show");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeHowItWorks();
+});
 
 // ============================================================
 //  AUTH TAB SWITCH

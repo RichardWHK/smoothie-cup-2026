@@ -54,6 +54,9 @@
       min-width: 0; overflow-wrap: anywhere;
     }
     .prog-match-detail { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    /* The real blowout fix: let grid/flex COLUMNS shrink below their content */
+    .app-grid, .group-grid, .ingredient-grid { min-width: 0; }
+    .app-grid > *, .group-grid > *, .ingredient-grid > * { min-width: 0; }
 
     /* Animated starfield bg */
     body::before {
@@ -342,6 +345,20 @@
       .app-grid { grid-template-columns: 1fr; }
       .blender-col { position: static; order: 2; }
       .blender-card { max-width: 420px; margin: 0 auto; }
+
+      /* Nav: one horizontal scroll strip instead of wrapping rows */
+      .nav-btns {
+        flex-wrap: nowrap; overflow-x: auto; width: 100%;
+        scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+      }
+      .nav-btns::-webkit-scrollbar { display: none; }
+      .nav-btn { flex-shrink: 0; }
+
+      /* Stakes banner: stack vertically so it can never overflow */
+      .group-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .group-banner-rule { flex-direction: column; gap: 6px; width: 100%; }
+      .stake-yum, .stake-yuck { white-space: normal; overflow-wrap: anywhere; }
     }
 
     /* Phone polish */

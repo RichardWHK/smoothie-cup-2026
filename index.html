@@ -894,6 +894,65 @@
     .count-yum  { font-size: 13px; font-weight: 800; color: var(--green); }
     .count-yuck { font-size: 13px; font-weight: 800; color: var(--red); }
 
+
+    /* ── BONUS ROUND ─────────────────────────────────────── */
+    .bonus-header {
+      background: linear-gradient(135deg, rgba(139,92,246,.25), rgba(236,72,153,.15));
+      border: 1px solid rgba(139,92,246,.4);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .bonus-header h2 { font-family: var(--font-head); font-size: 26px; color: #a78bfa; }
+    .bonus-header p  { font-size: 13px; color: var(--muted); margin-top: 6px; font-weight: 700; }
+    .bonus-match {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin: 12px 0 0; flex-wrap: wrap;
+    }
+    .bonus-team-btn {
+      flex: 1; min-width: 120px; max-width: 200px;
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; font-family: var(--font-body);
+      font-size: 13px; font-weight: 800; color: var(--text);
+      transition: all .2s;
+    }
+    .bonus-team-btn:hover:not(:disabled) { border-color: #a78bfa; background: rgba(139,92,246,.15); }
+    .bonus-team-btn.selected { background: rgba(139,92,246,.25); border-color: #a78bfa; color: #fff; }
+    .bonus-team-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .bonus-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px;
+    }
+    .bonus-section-title {
+      font-family: var(--font-head); font-size: 18px; margin-bottom: 4px;
+    }
+    .bonus-section-sub { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 14px; }
+    .bonus-yuck-list { display: flex; flex-direction: column; gap: 8px; }
+    .bonus-yuck-btn {
+      width: 100%; text-align: left;
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: var(--radius-sm); padding: 11px 14px;
+      font-family: var(--font-body); font-size: 13px; font-weight: 800;
+      color: var(--red); cursor: pointer; transition: all .2s;
+    }
+    .bonus-yuck-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(239,68,68,.1); }
+    .bonus-yuck-btn.selected-veto   { background: rgba(34,197,94,.15); border-color: var(--green); color: var(--green); }
+    .bonus-yuck-btn.selected-double { background: rgba(239,68,68,.15); border-color: var(--red); }
+    .bonus-yuck-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .bonus-outcome {
+      border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px;
+      text-align: center;
+    }
+    .bonus-outcome.lifeline      { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3); }
+    .bonus-outcome.double-trouble{ background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3); }
+    .bonus-outcome.pending       { background: var(--surface);       border: 1px solid var(--border); }
+    .bonus-outcome h3 { font-family: var(--font-head); font-size: 22px; margin-bottom: 6px; }
+    .bonus-outcome p  { font-size: 13px; color: var(--muted); }
+    .countdown-bonus { margin-top: 10px; }
+
     /* ── LEADERBOARD / SMOOTHIE SCREENS ──────────────────── */
     .lb-wrap, .smoothie-wrap {
       max-width: 640px;
@@ -1236,6 +1295,7 @@
         <button class="nav-btn active-tab" id="nav-predict" onclick="switchMainView('predict')">⚽ Predict</button>
         <button class="nav-btn"            id="nav-smoothie" onclick="switchMainView('smoothie')">🥤 My Smoothie</button>
         <button class="nav-btn"            id="nav-leaderboard" onclick="switchMainView('leaderboard')">🏆 Leaderboard</button>
+        <button class="nav-btn"            id="nav-bonus" onclick="switchMainView('bonus')">🎲 Bonus Round</button>
         <button class="nav-btn"            id="nav-howto" onclick="openHowItWorks()">❓ How It Works</button>
         <button class="nav-btn"            id="nav-logout" onclick="doLogout()">↩ Logout</button>
       </div>
@@ -1308,6 +1368,14 @@
           <div>Results will appear here as matches are played!</div>
           <div class="mt-8 text-muted" style="font-size:12px;">Check back after each phase concludes.</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: BONUS ROUND ────────────────────────────────────── -->
+    <div id="view-bonus" class="smoothie-wrap" style="display:none;">
+      <div class="section-title fade-up">🎲 Bonus Round</div>
+      <div id="bonus-content">
+        <div class="empty-state"><div class="spinner"></div></div>
       </div>
     </div>
 
@@ -1400,6 +1468,7 @@ const PHASE_DEADLINES = {
   5: "2026-07-15T10:00:00+12:00", // Semi-Finals
   6: "2026-07-20T07:00:00+12:00", // Grand Final
 };
+const BONUS_DEADLINE = "2026-07-19T09:00:00+12:00"; // 3rd Place — Sun 19 Jul, 9:00 AM NZ
 function getDeadline(phaseId) {
   const iso = PHASE_DEADLINES[phaseId];
   return iso ? new Date(iso) : null;
@@ -1429,7 +1498,8 @@ let state = {
   predictions: {},         // { "phase-matchIdx": "Team Name" }
   smoothie: null,          // cached getSmoothie response (real results)
   currentPhase: 1,
-  currentView: "predict",  // predict | smoothie | leaderboard
+  currentView: "predict",  // predict | smoothie | leaderboard | bonus
+  bonusState: null,          // loaded from getBonusState
   loading: false,
 };
 
@@ -1477,6 +1547,8 @@ async function refreshLiveData() {
       renderSmoothie(state.smoothie);
     } else if (state.currentView === "leaderboard") {
       loadLeaderboard();
+    } else if (state.currentView === "bonus") {
+      loadBonus();
     }
   } catch(e) { /* silent — just try again next tick */ }
 }
@@ -1736,12 +1808,15 @@ function doLogout() {
 // ============================================================
 function switchMainView(view) {
   state.currentView = view;
-  ["predict","smoothie","leaderboard"].forEach(v => {
-    document.getElementById(`view-${v}`).style.display = v === view ? (v === "predict" ? "grid" : "block") : "none";
-    document.getElementById(`nav-${v}`).classList.toggle("active-tab", v === view);
+  ["predict","smoothie","leaderboard","bonus"].forEach(v => {
+    const el = document.getElementById(`view-${v}`);
+    if (el) el.style.display = v === view ? (v === "predict" ? "grid" : "block") : "none";
+    const nav = document.getElementById(`nav-${v}`);
+    if (nav) nav.classList.toggle("active-tab", v === view);
   });
   if (view === "leaderboard") loadLeaderboard();
   if (view === "smoothie")    loadSmoothie();
+  if (view === "bonus")       loadBonus();
 }
 
 // ============================================================
@@ -1932,18 +2007,21 @@ let countdownTimer = null;
 function startCountdownTicker() {
   stopCountdownTicker();
   countdownTimer = setInterval(() => {
-    if (!state.username || state.currentView !== "predict") return;
-    const phaseId = state.currentPhase;
-    const wasPast = countdownTimer._past && countdownTimer._past[phaseId];
-    const nowPast = isPastDeadline(phaseId);
-    renderCountdown(phaseId);
-    // The instant a deadline flips, re-render so buttons lock immediately
-    if (nowPast && !wasPast) {
-      countdownTimer._past = countdownTimer._past || {};
-      countdownTimer._past[phaseId] = true;
-      renderPhaseContent();
-      renderPhaseTabs();
-      updateBlender();
+    if (!state.username) return;
+    if (state.currentView === "predict") {
+      const phaseId = state.currentPhase;
+      const wasPast = countdownTimer._past && countdownTimer._past[phaseId];
+      const nowPast = isPastDeadline(phaseId);
+      renderCountdown(phaseId);
+      if (nowPast && !wasPast) {
+        countdownTimer._past = countdownTimer._past || {};
+        countdownTimer._past[phaseId] = true;
+        renderPhaseContent();
+        renderPhaseTabs();
+        updateBlender();
+      }
+    } else if (state.currentView === "bonus") {
+      renderBonusCountdown();
     }
   }, 1000);
   countdownTimer._past = {};
@@ -2283,7 +2361,7 @@ function buildProgressCard(pr) {
     <div class="prog-match">
       <span class="prog-mark ${m.correct ? "ok" : "no"}">${m.correct ? "✓" : "✗"}</span>
       <span class="prog-match-label">${esc(m.label)}</span>
-      <span class="prog-match-detail">${esc(m.predicted || "—")} → <strong>${esc(m.actual)}</strong></span>
+      <span class="prog-match-detail">${esc(m.predicted || "—")} → <strong>${esc(cleanResult(m.actual))}</strong></span>
     </div>`).join("");
 
   return `
@@ -2335,7 +2413,32 @@ function renderSmoothie(data) {
   }
 
   const yumHtml  = (yumIngredients  || []).map(i => `<div class="ingredient-chip yum">🍓 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet</div>`;
-  const yuckHtml = (yuckIngredients || []).map(i => `<div class="ingredient-chip yuck">🤢 ${esc(i.name)}</div>`).join("") || `<div class="text-muted" style="font-size:13px">None yet!</div>`;
+  const yuckHtml = (yuckIngredients || []).map(i => {
+    const extra = i.doubled ? ' style="background:rgba(239,68,68,.25);font-weight:900;"' : i.vetoed ? ' style="text-decoration:line-through;opacity:.5;"' : '';
+    return `<div class="ingredient-chip yuck"${extra}>🤢 ${esc(i.name)}</div>`;
+  }).join("") || `<div class="text-muted" style="font-size:13px">None yet!</div>`;
+
+  // Bonus outcome card
+  const bonusOutcome = data.bonusOutcome;
+  let bonusHtml = "";
+  if (bonusOutcome) {
+    if (bonusOutcome.outcome === "lifeline") {
+      bonusHtml = `<div class="bonus-outcome lifeline" style="margin-bottom:14px;">
+        <h3>😇 Lifeline Used!</h3>
+        <p>You picked <strong>${esc(bonusOutcome.teamPick)}</strong> correctly! 🗑️ <strong>${esc(bonusOutcome.vetoedName)}</strong> crossed off your list.</p>
+      </div>`;
+    } else if (bonusOutcome.outcome === "double_trouble") {
+      bonusHtml = `<div class="bonus-outcome double-trouble" style="margin-bottom:14px;">
+        <h3>😈 Double Trouble!</h3>
+        <p><strong>${esc(bonusOutcome.doubledName)}</strong> has been doubled in your smoothie. Enjoy! 😬</p>
+      </div>`;
+    } else if (bonusOutcome.outcome === "pending") {
+      bonusHtml = `<div class="bonus-outcome pending" style="margin-bottom:14px;">
+        <h3>🎲 Bonus Result Pending</h3>
+        <p>You picked <strong>${esc(bonusOutcome.teamPick || "—")}</strong> for 3rd place. Result incoming after the match!</p>
+      </div>`;
+    }
+  }
 
   // Per-match breakdown excludes threshold phases (1–3) — those show in the
   // progress section below with full per-match detail.
@@ -2343,6 +2446,7 @@ function renderSmoothie(data) {
   const progressHtml = progress.map(buildProgressCard).join("");
 
   content.innerHTML = `
+    ${bonusHtml}
     <div class="card fade-up" style="margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="font-family:var(--font-head);font-size:22px;">${esc(rating)}</div>
@@ -2379,6 +2483,195 @@ function renderSmoothie(data) {
 }
 
 // ============================================================
+//  BONUS ROUND
+// ============================================================
+async function loadBonus() {
+  const content = document.getElementById("bonus-content");
+  content.innerHTML = `<div class="empty-state"><div class="spinner"></div></div>`;
+  try {
+    const data = await apiGet({ action: "getBonusState", username: state.username, pin: state.pin });
+    if (!data.success) { content.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div>${esc(data.error)}</div>`; return; }
+    state.bonusState = data;
+    renderBonus(data);
+  } catch(e) {
+    content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Network error.</div>`;
+  }
+}
+
+function renderBonus(data) {
+  const content = document.getElementById("bonus-content");
+  if (!data) return;
+
+  const { existing, confirmedYucks, match, deadlinePassed } = data;
+  const locked = deadlinePassed || (existing && existing.outcome !== "pending");
+  const bonusDeadline = new Date(BONUS_DEADLINE);
+  const timeLeft = bonusDeadline - Date.now();
+
+  // If already resolved, show outcome card
+  if (existing && existing.outcome === "lifeline") {
+    content.innerHTML = `
+      <div class="bonus-outcome lifeline">
+        <h3>😇 The Lifeline Activated!</h3>
+        <p>You picked <strong>${esc(existing.teamPick)}</strong> correctly!</p>
+        <p style="margin-top:8px;">🗑️ <strong>${esc(existing.vetoIngredient)}</strong> has been removed from your smoothie.</p>
+      </div>
+      ${renderBonusSummaryCard(existing)}`;
+    return;
+  }
+  if (existing && existing.outcome === "double_trouble") {
+    content.innerHTML = `
+      <div class="bonus-outcome double-trouble">
+        <h3>😈 Double Trouble!</h3>
+        <p>You picked <strong>${esc(existing.teamPick)}</strong> but it didn't win.</p>
+        <p style="margin-top:8px;">💀 <strong>${esc(existing.doubleIngredient)}</strong> has been DOUBLED in your smoothie.</p>
+      </div>
+      ${renderBonusSummaryCard(existing)}`;
+    return;
+  }
+
+  // Awaiting result but already submitted
+  if (existing && existing.outcome === "pending" && match && match.result && match.result !== "Pending") {
+    content.innerHTML = `<div class="bonus-outcome pending"><h3>⏳ Result being processed...</h3><p>Check back in a moment.</p></div>`;
+    return;
+  }
+
+  // Countdown or locked state
+  const cdHtml = !deadlinePassed ? `
+    <div class="countdown countdown-bonus" id="bonus-countdown"></div>` : `
+    <div style="font-size:12px;font-weight:800;color:var(--red);margin-top:10px;">🔒 Bonus round closed</div>`;
+
+  // Match display
+  const hasMatch = match && !isPlaceholder(match.teamA) && !isPlaceholder(match.teamB);
+  const matchHtml = hasMatch ? `
+    <div class="bonus-match">
+      <button class="bonus-team-btn ${state.predictions['bonus-team'] === match.teamA ? 'selected' : ''}"
+        ${locked ? 'disabled' : ''} onclick="bonusPick('team', '${esc(match.teamA)}')">
+        <div class="team-flag">${flagHTML(match.teamA)}</div>
+        <span>${esc(match.teamA)}</span>
+      </button>
+      <div class="vs-divider">VS</div>
+      <button class="bonus-team-btn ${state.predictions['bonus-team'] === match.teamB ? 'selected' : ''}"
+        ${locked ? 'disabled' : ''} onclick="bonusPick('team', '${esc(match.teamB)}')">
+        <div class="team-flag">${flagHTML(match.teamB)}</div>
+        <span>${esc(match.teamB)}</span>
+      </button>
+    </div>` : `<p style="color:var(--muted);font-size:13px;margin-top:12px;">⏳ Teams will appear once the semi-finals conclude.</p>`;
+
+  // Yuck selectors — only show if they have confirmed yucks
+  const hasYucks = confirmedYucks && confirmedYucks.length > 0;
+  const yuckListHtml = (list, type, label) => !hasYucks
+    ? `<p style="color:var(--muted);font-size:13px;">No confirmed yuck ingredients yet — check back after earlier phase results are in.</p>`
+    : list.map(y => `
+      <button class="bonus-yuck-btn ${state.predictions['bonus-'+type] === y ? 'selected-'+type : ''}"
+        ${locked ? 'disabled' : ''} onclick="bonusPick('${type}', '${esc(y)}')">
+        🤢 ${esc(y)} ${state.predictions['bonus-'+type] === y ? (type==='veto' ? '✓ Will veto' : '💀 Will double') : ''}
+      </button>`).join("");
+
+  // Pre-populate from existing pick if returning to the screen
+  if (existing) {
+    state.predictions['bonus-team']   = existing.teamPick;
+    state.predictions['bonus-veto']   = existing.vetoIngredient;
+    state.predictions['bonus-double'] = existing.doubleIngredient;
+  }
+
+  const alreadyLocked = existing && !deadlinePassed;
+
+  content.innerHTML = `
+    <div class="bonus-header">
+      <h2>🎲 3rd Place Play-Off</h2>
+      <p>Sunday 19 July · Bonus round — the stakes are different here</p>
+      ${cdHtml}
+    </div>
+
+    ${alreadyLocked ? `<div style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.4);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:14px;font-size:13px;font-weight:800;color:#a78bfa;">
+      🔒 Your bonus pick is locked in — awaiting the result!</div>` : ""}
+
+    <div class="bonus-section">
+      <div class="bonus-section-title">⚽ Who wins 3rd place?</div>
+      <div class="bonus-section-sub">Correct → you get to veto a Yuck. Wrong → a Yuck gets doubled.</div>
+      ${matchHtml}
+    </div>
+
+    <div class="bonus-section">
+      <div class="bonus-section-title">😇 The Lifeline — if you're right, veto this:</div>
+      <div class="bonus-section-sub">Choose a Yuck ingredient to cross off your list if your pick wins.</div>
+      <div class="bonus-yuck-list">${yuckListHtml(confirmedYucks || [], 'veto', 'veto')}</div>
+    </div>
+
+    <div class="bonus-section">
+      <div class="bonus-section-title">😈 Double Trouble — if you're wrong, this gets doubled:</div>
+      <div class="bonus-section-sub">Choose your absolute worst ingredient. Get it wrong and it goes in twice.</div>
+      <div class="bonus-yuck-list">${yuckListHtml(confirmedYucks || [], 'double', 'double')}</div>
+    </div>
+
+    ${!locked && !alreadyLocked ? `<button class="btn btn-primary" id="bonus-save-btn" onclick="saveBonus()" style="margin-top:4px;">
+      🎲 Lock In My Bonus Pick
+    </button>` : ""}
+  `;
+
+  // Start the bonus countdown
+  if (!deadlinePassed) renderBonusCountdown();
+}
+
+function renderBonusSummaryCard(existing) {
+  return `
+    <div class="bonus-section" style="margin-top:14px;">
+      <div class="bonus-section-title" style="font-size:15px;">Your picks</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px;">
+        Team: <strong style="color:var(--text)">${esc(existing.teamPick)}</strong><br>
+        Veto attempt: <strong style="color:var(--green)">${esc(existing.vetoIngredient)}</strong><br>
+        Double risk: <strong style="color:var(--red)">${esc(existing.doubleIngredient)}</strong>
+      </div>
+    </div>`;
+}
+
+function bonusPick(type, value) {
+  state.predictions['bonus-' + type] = value;
+  // Re-render without a full reload
+  if (state.bonusState) renderBonus(state.bonusState);
+}
+
+async function saveBonus() {
+  const teamPick   = state.predictions['bonus-team'];
+  const vetoIng    = state.predictions['bonus-veto'];
+  const doubleIng  = state.predictions['bonus-double'];
+
+  if (!teamPick)  { toast("Pick a team first!", "error"); return; }
+  if (!vetoIng)   { toast("Choose a Yuck to veto!", "error"); return; }
+  if (!doubleIng) { toast("Choose your worst Yuck for Double Trouble!", "error"); return; }
+
+  setLoading("bonus-save-btn", true);
+  try {
+    const data = await apiPost({
+      action: "saveBonus",
+      username: state.username, pin: state.pin,
+      teamPick, vetoIngredient: vetoIng, doubleIngredient: doubleIng,
+    });
+    if (data.success) {
+      toast(data.message || "Bonus pick locked! 🎲", "success");
+      loadBonus(); // refresh the view to show locked state
+    } else {
+      toast(data.error || "Could not save.", "error");
+    }
+  } catch(e) {
+    toast("Network error. Try again.", "error");
+  }
+  setLoading("bonus-save-btn", false, "🎲 Lock In My Bonus Pick");
+}
+
+function renderBonusCountdown() {
+  const el = document.getElementById("bonus-countdown");
+  if (!el) return;
+  const deadline = new Date(BONUS_DEADLINE);
+  const diff = deadline - Date.now();
+  if (diff <= 0) { el.className = "countdown expired"; el.innerHTML = "🔒 Bonus round closed"; return; }
+  const secs = Math.floor(diff/1000);
+  const d = Math.floor(secs/86400), h = Math.floor((secs%86400)/3600), m = Math.floor((secs%3600)/60), s = secs%60;
+  el.className = "countdown" + (diff < 3600000 ? " urgent" : "");
+  el.innerHTML = `<span class="countdown-label">Locks in</span>${cdUnit(d,"Days")}${cdUnit(h,"Hrs")}${cdUnit(m,"Min")}${cdUnit(s,"Sec")}`;
+}
+
+// ============================================================
 //  UTILITIES
 // ============================================================
 function setLoading(btnId, loading, originalText) {
@@ -2397,6 +2690,17 @@ function setLoading(btnId, loading, originalText) {
 function esc(str) {
   if (!str) return "";
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Tidies up a result cell value for display — trims trailing commas/spaces
+// and normalises spacing around commas so it reads cleanly.
+function cleanResult(str) {
+  if (!str) return str;
+  return String(str)
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .join(", ");
 }
 
 // ============================================================

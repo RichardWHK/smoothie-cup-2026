@@ -1469,6 +1469,7 @@ const PHASE_DEADLINES = {
   6: "2026-07-20T07:00:00+12:00", // Grand Final
 };
 const BONUS_DEADLINE = "2026-07-19T09:00:00+12:00"; // 3rd Place — Sun 19 Jul, 9:00 AM NZ
+const BONUS_PHASE_ID = 7; // Results-sheet phase number reserved for the bonus round
 function getDeadline(phaseId) {
   const iso = PHASE_DEADLINES[phaseId];
   return iso ? new Date(iso) : null;
@@ -1722,6 +1723,7 @@ async function bootApp() {
     if (ms.success && ms.phases) {
       PHASES = Object.keys(ms.phases)
         .map(Number)
+        .filter(pid => pid !== BONUS_PHASE_ID) // Bonus Round lives on its own tab, not here
         .sort((a, b) => a - b)
         .map(pid => ({
           id:    pid,
